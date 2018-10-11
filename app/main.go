@@ -138,6 +138,7 @@ func getToken(userid string) string {
 }
 
 func main() {
+	fmt.Println("init migration")
 	initialMigration()
 	fmt.Println("------ connect start localhost:8080/ -------")
 	handleRequests()

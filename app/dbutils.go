@@ -25,7 +25,7 @@ type Download struct {
 
 func connectPostgres() *gorm.DB {
 	db, err := gorm.Open("postgres",
-		"host=127.0.0.1 "+
+		"host=db "+
 			"port=5432 "+
 			"user=postgres "+
 			"sslmode=disable")
