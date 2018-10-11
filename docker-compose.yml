@@ -1,0 +1,19 @@
+version: '3.1' #docker-composeのバージョンを指定
+services:
+    db:
+        image: postgres
+        environment:
+          POSTGRES_DB: dev
+          POSTGRES_USER: hiroto
+          POSTGRES_PASSWORD: aaaaa
+        ports:
+          - 5432:5432
+    web:
+        build: ./app/.
+        command: go run main.go
+        volumes:
+            - ./app:/go/src/api
+        ports:
+            - 8080:8080
+        depends_on:
+            - db
