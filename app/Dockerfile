@@ -5,4 +5,4 @@ RUN apk add --no-cache git gcc && \
     go get github.com/gorilla/mux && \
     go get github.com/lib/pq
 
-WORKDIR /go/src/api
+WORKDIR /go/src/

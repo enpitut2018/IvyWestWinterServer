@@ -9,9 +9,10 @@ services:
       - 5432:5432
   web:
     build: ./app/.
-    command: ["go", "run", "app/main.go", "app/dbutils.go", "app/httputils.go"]
+    # command: "ls"
+    command: ["go", "run", "github.com/enpitut2018/IvyWestWinterServer/app/main.go"]
     volumes:
-      - .:/go/src/api
+      - /Users/user/go/src:/go/src
     ports:
       - 8080:8080
     depends_on:

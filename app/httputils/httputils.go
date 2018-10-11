@@ -1,15 +1,15 @@
-package main
+package httputils
 
 import (
 	"encoding/json"
 	"net/http"
 )
 
-func respondError(w http.ResponseWriter, code int, message string) {
-	respondJson(w, code, map[string]string{"error": message})
+func RespondError(w http.ResponseWriter, code int, message string) {
+	RespondJson(w, code, map[string]string{"error": message})
 }
 
-func respondJson(w http.ResponseWriter, status int, payload interface{}) {
+func RespondJson(w http.ResponseWriter, status int, payload interface{}) {
 	response, err := json.Marshal(payload)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
