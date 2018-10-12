@@ -8,11 +8,10 @@ services:
     ports:
       - 5432:5432
   web:
-    build: ./app/.
-    # command: "ls"
-    command: ["go", "run", "github.com/enpitut2018/IvyWestWinterServer/app/main.go"]
+    build: ./app
+    command: ["go", "run", "app/main.go"]
     volumes:
-      - /Users/user/go/src:/go/src
+      - .:/go/src/github.com/enpitut2018/IvyWestWinterServer
     ports:
       - 8080:8080
     depends_on:
