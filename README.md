@@ -23,7 +23,7 @@ ivy-west winter server
   {"userid": "ivy", "password": "pass"} -> token
 
 /uploads(header: {"Autorization": token})
-  - GET: ユーザがアップロードした画像をもらう。
+  - GET: ?userid="" ユーザがアップロードした画像をもらう。
   {"source": ""} -> {}
   - POST: 画像をアップロードする。
   {"source": ""} -> ok or fail
