@@ -16,6 +16,7 @@ type Photo struct {
 	gorm.Model
 	Source string
 	Userid string
+	Url    string
 }
 
 type Download struct {

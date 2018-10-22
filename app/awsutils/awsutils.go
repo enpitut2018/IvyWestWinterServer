@@ -1,28 +1,35 @@
 package awsutils
 
 import (
-	"github.com/awslabs/aws-sdk-go/aws"
-	"github.com/awslabs/aws-sdk-go/aws/awsutil"
-	"github.com/awslabs/aws-sdk-go/aws/credentials"
-	"github.com/awslabs/aws-sdk-go/service/s3"
-	"time"
+	"bytes"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 )
 
-func getS3Client() {
-	creds := credentials.NewStaticCredentials("Your AWS Key", "Your AWS Secret", "")
-	client := s3.New(creds, s3.BucketLocationConstraintApNortheast1, nil)
+var (
+	ACCESS_KEY = ""
+	SECRET_KEY = ""
+)
+
+func getS3Client() *s3.S3 {
+	creds := credentials.NewStaticCredentials(ACCESS_KEY, SECRET_KEY, "")
+	client := s3.New(session.New(), &aws.Config{
+		Credentials: creds,
+		Region:      aws.String("ap-northeast-1"),
+	})
 	return client
 }
 
-func UploadS3(body *File) string {
+func UploadS3(body []byte, keyname string) error {
 	client := getS3Client()
-	params := &s3.PutObjectInput{
+	input := &s3.PutObjectInput{
 		Bucket: aws.String("ivy-west-winter"), // Required
-		Key:    aws.String("your_s3_key"),     // Required
+		Key:    aws.String(keyname),           // Required
 		ACL:    aws.String("public-read"),
 		Body:   bytes.NewReader(body),
 	}
-	req, err := client.PutObjectRequest(&s3.PutObject(params))
-	urlStr, err := req.Presign(10 * time.Minute)
-	return urlStr
+	_, err := client.PutObject(input)
+	return err
 }
