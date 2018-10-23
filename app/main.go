@@ -2,7 +2,8 @@ package main
 
 import (
 	"./dbutils"
-	"./photo"
+	"./download"
+	"./upload"
 	"./userauth"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -12,12 +13,15 @@ import (
 
 func handleRequests() {
 	myRouter := mux.NewRouter().StrictSlash(true)
-	myRouter.HandleFunc("/downloads", photo.Downloads).Methods("GET")
-	myRouter.HandleFunc("/uploads", photo.Uploads).Methods("GET")
+	myRouter.HandleFunc("/downloads", download.CreateDownloads).Methods("POST")
+	myRouter.HandleFunc("/downloads", download.GetDownloads).Methods("GET")
+	myRouter.HandleFunc("/downloads", download.DeleteDownloads).Methods("DELETE")
+	myRouter.HandleFunc("/uploads", upload.CreateUploads).Methods("POST")
+	myRouter.HandleFunc("/uploads", upload.GetUploads).Methods("GET")
+	myRouter.HandleFunc("/uploads", upload.DeleteUploads).Methods("DELETE")
 	myRouter.HandleFunc("/signup", userauth.Signup).Methods("POST")
 	myRouter.HandleFunc("/signin", userauth.Signin).Methods("POST")
-	myRouter.HandleFunc("/photo", photo.Photo).Methods("POST")
-	log.Fatal(http.ListenAndServe(":8080", myRouter))
+	log.Print(http.ListenAndServe(":8080", myRouter))
 }
 
 func main() {
