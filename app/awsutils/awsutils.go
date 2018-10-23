@@ -22,7 +22,7 @@ func getS3Client() *s3.S3 {
 	return client
 }
 
-func UploadS3(body []byte, keyname string) error {
+func UploadS3(body []byte, keyname string) bool {
 	client := getS3Client()
 	input := &s3.PutObjectInput{
 		Bucket: aws.String("ivy-west-winter"), // Required
@@ -30,6 +30,10 @@ func UploadS3(body []byte, keyname string) error {
 		ACL:    aws.String("public-read"),
 		Body:   bytes.NewReader(body),
 	}
-	_, err := client.PutObject(input)
-	return err
+	if _, err := client.PutObject(input); err != nil {
+		panic(err.Error())
+		return false
+	} else {
+		return true
+	}
 }

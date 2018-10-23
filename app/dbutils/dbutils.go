@@ -14,15 +14,15 @@ type User struct {
 
 type Photo struct {
 	gorm.Model
-	Source string
+	XID    string
 	Userid string
 	Url    string
 }
 
 type Download struct {
 	gorm.Model
-	User  User
-	Photo Photo
+	Userid  string
+	Photoid string
 }
 
 func ConnectPostgres() *gorm.DB {
@@ -41,19 +41,4 @@ func InitialMigration() {
 	db := ConnectPostgres()
 	defer db.Close()
 	db.AutoMigrate(&User{}, &Photo{}, &Download{})
-}
-
-func InitialSQL() {
-	db := ConnectPostgres()
-	defer db.Close()
-
-	user := User{Userid: "ivy", Password: "pass", Token: "AAAAAAAA"}
-	if err := db.Create(&user).Error; err != nil {
-		panic(err.Error())
-	}
-
-	photo := Photo{Source: "ENCODEDPHOTO", Userid: user.Userid}
-	if err := db.Create(&photo).Error; err != nil {
-		panic(err.Error())
-	}
 }
