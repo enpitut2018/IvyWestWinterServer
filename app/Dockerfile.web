@@ -1,0 +1,14 @@
+FROM golang:1.10.2-alpine3.7
+
+RUN apk add --no-cache git gcc && \
+  go get github.com/jinzhu/gorm && \
+  go get github.com/gorilla/mux && \
+  go get github.com/lib/pq &&\
+  go get github.com/rs/xid && \
+  go get github.com/aws/aws-sdk-go
+
+RUN mkdir -p /go/src/github.com/enpitut2018/IvyWestWinterServer/app
+ADD . /go/src/github.com/enpitut2018/IvyWestWinterServer/app
+WORKDIR /go/src/github.com/enpitut2018/IvyWestWinterServer/app
+
+CMD ["go", "run", "main.go"]
