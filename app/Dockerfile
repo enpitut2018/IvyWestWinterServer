@@ -1,5 +1,8 @@
 FROM golang:1.10.2-alpine3.7
 
+ENV PORT 8080
+ENV DATABASE_URL postgresql://postgres@db:5432/ivy-winter?sslmode=disable
+
 RUN apk add --no-cache git gcc && \
   go get github.com/jinzhu/gorm && \
   go get github.com/gorilla/mux && \

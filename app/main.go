@@ -23,8 +23,6 @@ func handleRequests() {
 	myRouter.HandleFunc("/uploads", upload.DeleteUploads).Methods("DELETE")
 	myRouter.HandleFunc("/signup", userauth.Signup).Methods("POST")
 	myRouter.HandleFunc("/signin", userauth.Signin).Methods("POST")
-	// herokuデプロイ用にコメントアウト
-	// log.Print(http.ListenAndServe(":8080", myRouter))
 	log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), myRouter))
 }
 
