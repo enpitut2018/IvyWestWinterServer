@@ -1,14 +1,16 @@
 package main
 
 import (
+	"fmt"
+	"log"
+	"net/http"
+	"os"
+
 	"./dbutils"
 	"./download"
 	"./upload"
 	"./userauth"
-	"fmt"
 	"github.com/gorilla/mux"
-	"log"
-	"net/http"
 )
 
 func handleRequests() {
@@ -21,7 +23,9 @@ func handleRequests() {
 	myRouter.HandleFunc("/uploads", upload.DeleteUploads).Methods("DELETE")
 	myRouter.HandleFunc("/signup", userauth.Signup).Methods("POST")
 	myRouter.HandleFunc("/signin", userauth.Signin).Methods("POST")
-	log.Print(http.ListenAndServe(":8080", myRouter))
+	// herokuデプロイ用にコメントアウト
+	// log.Print(http.ListenAndServe(":8080", myRouter))
+	log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), myRouter))
 }
 
 func main() {
