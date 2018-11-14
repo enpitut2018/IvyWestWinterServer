@@ -10,6 +10,7 @@ import (
 	"./download"
 	"./upload"
 	"./userauth"
+	"./userface"
 	"github.com/gorilla/mux"
 )
 
@@ -21,6 +22,7 @@ func handleRequests() {
 	myRouter.HandleFunc("/uploads", upload.CreateUploads).Methods("POST")
 	myRouter.HandleFunc("/uploads", upload.GetUploads).Methods("GET")
 	myRouter.HandleFunc("/uploads", upload.DeleteUploads).Methods("DELETE")
+	myRouter.HandleFunc("/uploadUserFace", userface.UploadUserFace).Methods("POST")
 	myRouter.HandleFunc("/signup", userauth.Signup).Methods("POST")
 	myRouter.HandleFunc("/signin", userauth.Signin).Methods("POST")
 	log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), myRouter))

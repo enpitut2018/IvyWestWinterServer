@@ -21,6 +21,13 @@ type Photo struct {
 	Url    string
 }
 
+type UserFacePhoto struct {
+	gorm.Model
+	XID    string
+	Userid string
+	Url    string
+}
+
 type Download struct {
 	gorm.Model
 	Userid  string
