@@ -6,11 +6,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"os"
 )
 
 var (
-	ACCESS_KEY = ""
-	SECRET_KEY = ""
+	ACCESS_KEY = os.Getenv("AWS_ACEESSKEY")
+	SECRET_KEY = os.Getenv("AWS_TOKENKEY")
 )
 
 func getS3Client() *s3.S3 {
