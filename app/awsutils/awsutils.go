@@ -2,6 +2,8 @@ package awsutils
 
 import (
 	"bytes"
+	"os"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -10,8 +12,8 @@ import (
 )
 
 var (
-	ACCESS_KEY = os.Getenv("AWS_ACEESSKEY")
-	SECRET_KEY = os.Getenv("AWS_TOKENKEY")
+	ACCESS_KEY = os.Getenv("AWS_ACCESS_KEY")
+	SECRET_KEY = os.Getenv("AWS_SECRET_KEY")
 )
 
 func getS3Client() *s3.S3 {
