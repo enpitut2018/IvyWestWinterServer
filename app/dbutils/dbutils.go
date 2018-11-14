@@ -30,8 +30,8 @@ type UserFacePhoto struct {
 
 type Download struct {
 	gorm.Model
-	Userid  string
-	Photoid string
+	Userid   string
+	PhotoUrl string
 }
 
 func ConnectPostgres() *gorm.DB {

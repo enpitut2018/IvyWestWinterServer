@@ -74,6 +74,10 @@ func CreateUploads(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// face identification
+	// 顔認識技術を使用してDownloadテーブルにレコードを追加する。
+	faceIdentification.FaceIdentification(photo.URL)
+
 	httputils.RespondJson(w, http.StatusOK, photo)
 }
 
