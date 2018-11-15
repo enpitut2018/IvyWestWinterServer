@@ -25,6 +25,7 @@ func handleRequests() {
 	myRouter.HandleFunc("/uploadUserFace", userface.UploadUserFace).Methods("POST")
 	myRouter.HandleFunc("/signup", userauth.Signup).Methods("POST")
 	myRouter.HandleFunc("/signin", userauth.Signin).Methods("POST")
+	myRouter.HandleFunc("/user", userauth.GetUserInfo).Methods("GET")
 	log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), myRouter))
 }
 
