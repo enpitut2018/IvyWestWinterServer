@@ -16,12 +16,12 @@ func GetDownloads(w http.ResponseWriter, r *http.Request) {
 
 	var user dbutils.User
 	token := r.Header.Get("Authorization")
-	if err := db.Raw("SELECT * FROM uesrs WHERE token = ?", token).Scan(&user).Error; err != nil {
+	if err := db.Raw("SELECT * FROM users WHERE token = ?", token).Scan(&user).Error; err != nil {
 		httputils.RespondError(w, http.StatusUnauthorized, err.Error())
 		panic(err.Error())
 	}
 	var photos []dbutils.Photo
-	if err := db.Raw("SELECT * FROM photos WHERE userid = user.Userid").Scan(&photos).Error; err != nil {
+	if err := db.Raw("SELECT * FROM photos WHERE userid = ?", user.Userid).Scan(&photos).Error; err != nil {
 		httputils.RespondError(w, http.StatusBadRequest, err.Error())
 		panic(err.Error())
 	}
