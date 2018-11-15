@@ -14,5 +14,7 @@ services:
       - .:/go/src/github.com/enpitut2018/IvyWestWinterServer
     ports:
       - 8080:8080
+    env_file:
+      - .env
     depends_on:
       - db

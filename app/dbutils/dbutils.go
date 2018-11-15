@@ -45,5 +45,5 @@ func ConnectPostgres() *gorm.DB {
 func InitialMigration() {
 	db := ConnectPostgres()
 	defer db.Close()
-	db.AutoMigrate(&User{}, &Photo{}, &Download{})
+	db.AutoMigrate(&User{}, &Photo{}, &Download{}, &UserFacePhoto{})
 }

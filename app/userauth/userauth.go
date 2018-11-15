@@ -33,7 +33,7 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 			httputils.RespondError(w, http.StatusBadRequest, err.Error())
 			panic(err)
 		}
-		httputils.RespondJson(w, http.StatusOK, map[string]string{"message": "user created!"})
+		httputils.RespondJson(w, http.StatusOK, newuser)
 	}
 }
 

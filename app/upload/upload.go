@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/enpitut2018/IvyWestWinterServer/app/awsutils"
 	"github.com/enpitut2018/IvyWestWinterServer/app/dbutils"
+	"github.com/enpitut2018/IvyWestWinterServer/app/faceidentification"
 	"github.com/enpitut2018/IvyWestWinterServer/app/httputils"
 	"github.com/rs/xid"
 	"net/http"
@@ -76,7 +77,7 @@ func CreateUploads(w http.ResponseWriter, r *http.Request) {
 
 	// face identification
 	// 顔認識技術を使用してDownloadテーブルにレコードを追加する。
-	faceIdentification.FaceIdentification(photo.URL)
+	faceidentification.FaceIdentification(photo.Url)
 
 	httputils.RespondJson(w, http.StatusOK, photo)
 }

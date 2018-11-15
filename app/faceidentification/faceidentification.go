@@ -1,8 +1,10 @@
 package faceidentification
 
-import "fmt"
+import (
+	"github.com/enpitut2018/IvyWestWinterServer/app/dbutils"
+)
 
-func FaceIdentification(photourl) {
+func FaceIdentification(photourl string) {
 	db := dbutils.ConnectPostgres()
 	defer db.Close()
 
@@ -10,15 +12,13 @@ func FaceIdentification(photourl) {
 	// 今回はユーザーが全員写っていると想定する。
 	var users []dbutils.User
 	if err := db.Raw("SELECT * FROM users").Scan(&users).Error; err != nil {
-		httputils.RespondError(w, http.StatusUnauthorized, "can't Identification")
 		panic("can't Identification")
 	}
-	for user := range users {
+	for _, user := range users {
 		var download dbutils.Download
-		download.UserId = user.UserId
-		download.Url = photourl
-		if err = db.Create(&download).Error; err != nil {
-			httputils.RespondError(w, http.StatusInternalServerError, "Can't make record")
+		download.Userid = user.Userid
+		download.PhotoUrl = photourl
+		if err := db.Create(&download).Error; err != nil {
 			panic("Can't make record")
 		}
 	}

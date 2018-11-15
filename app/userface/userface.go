@@ -1,7 +1,15 @@
 package userface
 
 import (
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"github.com/enpitut2018/IvyWestWinterServer/app/awsutils"
+	"github.com/enpitut2018/IvyWestWinterServer/app/dbutils"
+	"github.com/enpitut2018/IvyWestWinterServer/app/httputils"
+	"github.com/rs/xid"
 	"net/http"
+	"path/filepath"
 )
 
 type Source struct {
@@ -37,9 +45,17 @@ func UploadUserFace(w http.ResponseWriter, r *http.Request) {
 	var user dbutils.User
 	var user_face_photo dbutils.UserFacePhoto
 
+	// user Authorization
 	if err := db.Raw("SELECT * FROM users WHERE token = ?", token).Scan(&user).Error; err != nil {
 		httputils.RespondError(w, http.StatusUnauthorized, err.Error())
 		panic(err.Error())
+	}
+
+	// update UserFacePhoto for already Uploaded
+	if db.Where("userid = ?", user.Userid).Find(&user_face_photo); user_face_photo.Userid != "" {
+		httputils.RespondError(w, http.StatusUnauthorized, "already uploaded face photo")
+		fmt.Printf("%+v\n", user_face_photo.Userid)
+		panic("already uploaded face photo")
 	} else {
 		user_face_photo.Userid = user.Userid
 		user_face_photo.Url = urlStr
