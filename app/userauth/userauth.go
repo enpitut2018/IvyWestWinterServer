@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"github.com/enpitut2018/IvyWestWinterServer/app/dbutils"
 	"github.com/enpitut2018/IvyWestWinterServer/app/httputils"
+	"github.com/enpitut2018/IvyWestWinterServer/app/models"
 	"net/http"
 	"strings"
 )
@@ -73,13 +74,10 @@ func GetUserInfo(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	var userInfo UserInfo
-	var user dbutils.User
+	var user models.User
 	var userFacePhoto dbutils.UserFacePhoto
 
-	if err := db.Raw("SELECT * FROM users WHERE token = ?", token).Scan(&user).Error; err != nil {
-		httputils.RespondError(w, http.StatusUnauthorized, err.Error())
-		panic(err.Error())
-	}
+	user.GetUserInfoFromToken(token)
 
 	db.Raw("SELECT * FROM user_face_photos WHERE userid = ?", user.Userid).Scan(&userFacePhoto)
 
