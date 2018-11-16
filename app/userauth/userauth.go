@@ -10,6 +10,11 @@ import (
 	"strings"
 )
 
+type UserInfo struct {
+	UserId    string
+	AvatarUrl string
+}
+
 func Signup(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	var newuser dbutils.User
@@ -33,7 +38,7 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 			httputils.RespondError(w, http.StatusBadRequest, err.Error())
 			panic(err)
 		}
-		httputils.RespondJson(w, http.StatusOK, map[string]string{"message": "user created!"})
+		httputils.RespondJson(w, http.StatusOK, newuser)
 	}
 }
 
@@ -59,6 +64,29 @@ func Signin(w http.ResponseWriter, r *http.Request) {
 			httputils.RespondJson(w, http.StatusOK, newuser)
 		}
 	}
+}
+
+func GetUserInfo(w http.ResponseWriter, r *http.Request) {
+	token := r.Header.Get("Authorization")
+
+	db := dbutils.ConnectPostgres()
+	defer db.Close()
+
+	var userInfo UserInfo
+	var user dbutils.User
+	var userFacePhoto dbutils.UserFacePhoto
+
+	if err := db.Raw("SELECT * FROM users WHERE token = ?", token).Scan(&user).Error; err != nil {
+		httputils.RespondError(w, http.StatusUnauthorized, err.Error())
+		panic(err.Error())
+	}
+
+	db.Raw("SELECT * FROM user_face_photos WHERE userid = ?", user.Userid).Scan(&userFacePhoto)
+
+	userInfo.UserId = user.Userid
+	userInfo.AvatarUrl = userFacePhoto.Url
+
+	httputils.RespondJson(w, http.StatusOK, userInfo)
 }
 
 func getToken(userid string) string {

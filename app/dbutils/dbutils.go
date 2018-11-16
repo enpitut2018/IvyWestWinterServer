@@ -21,10 +21,17 @@ type Photo struct {
 	Url    string
 }
 
+type UserFacePhoto struct {
+	gorm.Model
+	XID    string
+	Userid string
+	Url    string
+}
+
 type Download struct {
 	gorm.Model
-	Userid  string
-	Photoid string
+	Userid   string
+	PhotoUrl string
 }
 
 func ConnectPostgres() *gorm.DB {
@@ -38,5 +45,5 @@ func ConnectPostgres() *gorm.DB {
 func InitialMigration() {
 	db := ConnectPostgres()
 	defer db.Close()
-	db.AutoMigrate(&User{}, &Photo{}, &Download{})
+	db.AutoMigrate(&User{}, &Photo{}, &Download{}, &UserFacePhoto{})
 }
