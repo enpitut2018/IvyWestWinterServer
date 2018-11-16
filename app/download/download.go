@@ -20,13 +20,13 @@ func GetDownloads(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, http.StatusUnauthorized, err.Error())
 		panic(err.Error())
 	}
-	var photos []dbutils.Photo
-	if err := db.Raw("SELECT * FROM photos WHERE userid = ?", user.Userid).Scan(&photos).Error; err != nil {
+	var downloads []dbutils.Download
+	if err := db.Raw("SELECT * FROM downloads WHERE userid = ?", user.Userid).Scan(&downloads).Error; err != nil {
 		httputils.RespondError(w, http.StatusBadRequest, err.Error())
 		panic(err.Error())
 	}
 
-	httputils.RespondJson(w, http.StatusOK, photos)
+	httputils.RespondJson(w, http.StatusOK, downloads)
 }
 
 func DeleteDownloads(w http.ResponseWriter, r *http.Request) {
