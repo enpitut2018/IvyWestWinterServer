@@ -18,6 +18,10 @@ type User struct {
 	Token    string `gorm:"not null;unique" json:"token"`
 }
 
+type Users struct {
+	Users []User
+}
+
 func getToken(userid string) string {
 	h := md5.New()
 	h.Write([]byte(strings.ToLower(userid)))
@@ -25,8 +29,9 @@ func getToken(userid string) string {
 }
 
 func (user *User) GetUserFromToken(db *gorm.DB, w http.ResponseWriter, token string) bool {
-	if err := db.Raw("SELECT * FROM users WHERE token = ?", token).Scan(&user).Error; err != nil {
-		httputils.RespondError(w, http.StatusUnauthorized, "not valid token.")
+	if err := db.Find(&user, "token = ?", token).Error; err != nil {
+		httputils.RespondError(w, http.StatusUnauthorized, "Not valid token.")
+		panic("Not valid token.")
 		return false
 	} else {
 		return true
@@ -34,7 +39,7 @@ func (user *User) GetUserFromToken(db *gorm.DB, w http.ResponseWriter, token str
 }
 
 func (user *User) SelectByUserId(db *gorm.DB, userid string) bool {
-	if err := db.Raw("SELECT * FROM USERS WHERE userid = ?", userid).Scan(&user).Error; err != nil {
+	if err := db.Find(&user, "userid = ?", userid).Error; err != nil {
 		// 見つからなかったらfalseを返す。
 		return false
 	} else {
@@ -46,6 +51,7 @@ func (user *User) CreateUserRecord(db *gorm.DB, w http.ResponseWriter) bool {
 	user.Token = getToken(user.Userid)
 	if err := db.Create(&user).Error; err != nil {
 		httputils.RespondError(w, http.StatusInternalServerError, err.Error())
+		panic(err.Error())
 		return false
 	} else {
 		return true
@@ -55,7 +61,16 @@ func (user *User) CreateUserRecord(db *gorm.DB, w http.ResponseWriter) bool {
 func (user *User) UpdateAbaterUrl(db *gorm.DB, w http.ResponseWriter, abaterurl string) bool {
 	user.AbaterUrl = abaterurl
 	if err := db.Save(&user).Error; err != nil {
-		httputils.RespondError(w, http.StatusInternalServerError, "Can't Update AbaterUrl")
+		httputils.RespondError(w, http.StatusInternalServerError, "Can't Update AbaterUrl.")
+		panic("Can't Update AbaterUrl.")
+		return false
+	} else {
+		return true
+	}
+}
+
+func (users *Users) GetAllUsers(db *gorm.DB, w http.ResponseWriter) bool {
+	if err := db.Find(&users.Users).Error; err != nil{
 		return false
 	} else {
 		return true

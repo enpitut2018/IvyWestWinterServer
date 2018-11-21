@@ -29,7 +29,7 @@ func Signup(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 		user.Userid = requser.Userid
 		user.Password = requser.Password
 		if ok := user.CreateUserRecord(db, w); ok {
-			httputils.RespondJson(w, http.StatusOK, "Success to create new user.")
+			httputils.RespondJson(w, http.StatusOK, map[string]string{"message": "Success to create new user."})
 		}
 	}
 }

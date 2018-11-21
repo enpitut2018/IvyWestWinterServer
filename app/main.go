@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"os"
 
-	"./download"
-	"./upload"
+	"./downloads"
+	"./uploads"
 	"./userauth"
 	"./models"
 	"github.com/gorilla/mux"
@@ -27,19 +27,19 @@ func (app *App) Initialize() {
 		panic("Failed to connect to database")
 	}
 	// defer app.DB.Close()
-	// app.DB.DB().SetMaxIdleConns(0)
-	app.DB.AutoMigrate(&models.User{}, &models.Photo{}, &models.Download{})
+	app.DB.DB().SetMaxIdleConns(0)
+	app.DB.AutoMigrate(&models.User{}, &models.Upload{}, &models.Download{})
 }
 
 func (app *App) Run() {
 	defer app.DB.Close()
 	myRouter := mux.NewRouter().StrictSlash(true)
-	myRouter.HandleFunc("/downloads", handlerWithDB(download.CreateDownloads, app.DB)).Methods("POST")
-	myRouter.HandleFunc("/downloads", handlerWithDB(download.GetDownloads, app.DB)).Methods("GET")
-	myRouter.HandleFunc("/downloads", handlerWithDB(download.DeleteDownloads, app.DB)).Methods("DELETE")
-	myRouter.HandleFunc("/uploads", handlerWithDB(upload.CreateUploads, app.DB)).Methods("POST")
-	myRouter.HandleFunc("/uploads", handlerWithDB(upload.GetUploads, app.DB)).Methods("GET")
-	myRouter.HandleFunc("/uploads", handlerWithDB(upload.DeleteUploads, app.DB)).Methods("DELETE")
+	myRouter.HandleFunc("/downloads", handlerWithDB(downloads.CreateDownloads, app.DB)).Methods("POST")
+	myRouter.HandleFunc("/downloads", handlerWithDB(downloads.GetDownloads, app.DB)).Methods("GET")
+	myRouter.HandleFunc("/downloads", handlerWithDB(downloads.DeleteDownloads, app.DB)).Methods("DELETE")
+	myRouter.HandleFunc("/uploads", handlerWithDB(uploads.CreateUploads, app.DB)).Methods("POST")
+	myRouter.HandleFunc("/uploads", handlerWithDB(uploads.GetUploads, app.DB)).Methods("GET")
+	myRouter.HandleFunc("/uploads", handlerWithDB(uploads.DeleteUploads, app.DB)).Methods("DELETE")
 	myRouter.HandleFunc("/uploadUserFace", handlerWithDB(userauth.UploadUserFace, app.DB)).Methods("POST")
 	myRouter.HandleFunc("/signup", handlerWithDB(userauth.Signup, app.DB)).Methods("POST")
 	myRouter.HandleFunc("/signin", handlerWithDB(userauth.Signin, app.DB)).Methods("POST")

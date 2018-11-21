@@ -8,12 +8,32 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"net/http"
+	"encoding/base64"
+	"path/filepath"
+	"github.com/enpitut2018/IvyWestWinterServer/app/httputils"
+	"github.com/rs/xid"
 )
 
 var (
 	ACCESS_KEY = os.Getenv("AWS_ACCESS_KEY")
 	SECRET_KEY = os.Getenv("AWS_SECRET_KEY")
 )
+
+func UploadPhoto(w http.ResponseWriter, base64Str string, urlBase string) string {
+	data, err := base64.StdEncoding.DecodeString(base64Str)
+	if err != nil {
+		httputils.RespondError(w, http.StatusBadRequest, err.Error())
+		panic("can't decode base64")
+	}
+	guid := xid.New() // xidというユニークなID
+	imageFileName := guid.String()+".jpg"
+	if false == UploadS3(data, imageFileName) {
+		httputils.RespondError(w, http.StatusInternalServerError, "Can't upload the photo.")
+		panic("Can't upload the photo.")
+	}
+	return filepath.Join(urlBase, imageFileName)
+}
 
 func getS3Client() *s3.S3 {
 	creds := credentials.NewStaticCredentials(ACCESS_KEY, SECRET_KEY, "")
