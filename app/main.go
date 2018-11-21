@@ -27,8 +27,8 @@ func (app *App) Initialize() {
 		panic("Failed to connect to database")
 	}
 	// defer app.DB.Close()
-	app.DB.DB().SetMaxIdleConns(0)
-	app.DB.AutoMigrate(&models.User{}, &models.Photo{}, &models.Download{}, &models.UserFacePhoto{})
+	// app.DB.DB().SetMaxIdleConns(0)
+	app.DB.AutoMigrate(&models.User{}, &models.Photo{}, &models.Download{})
 }
 
 func (app *App) Run() {
