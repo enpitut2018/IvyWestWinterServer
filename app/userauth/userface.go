@@ -1,22 +1,23 @@
-package userface
+package userauth
 
 import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/enpitut2018/IvyWestWinterServer/app/awsutils"
-	"github.com/enpitut2018/IvyWestWinterServer/app/dbutils"
 	"github.com/enpitut2018/IvyWestWinterServer/app/httputils"
+	"github.com/enpitut2018/IvyWestWinterServer/app/models"
 	"github.com/rs/xid"
 	"net/http"
 	"path/filepath"
+	"github.com/jinzhu/gorm"
 )
 
 type Source struct {
 	Source string
 }
 
-func UploadUserFace(w http.ResponseWriter, r *http.Request) {
+func UploadUserFace(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	token := r.Header.Get("Authorization")
 	var source Source
 	decoder := json.NewDecoder(r.Body)
@@ -24,9 +25,6 @@ func UploadUserFace(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, http.StatusBadRequest, err.Error())
 		panic(err.Error())
 	}
-
-	db := dbutils.ConnectPostgres()
-	defer db.Close()
 
 	data, err := base64.StdEncoding.DecodeString(source.Source)
 	if err != nil {
@@ -42,8 +40,8 @@ func UploadUserFace(w http.ResponseWriter, r *http.Request) {
 	}
 	urlStr := filepath.Join("https://s3-ap-northeast-1.amazonaws.com/ivy-west-winter/", imageFilePath)
 
-	var user dbutils.User
-	var user_face_photo dbutils.UserFacePhoto
+	var user models.User
+	var user_face_photo models.UserFacePhoto
 
 	// user Authorization
 	if err := db.Raw("SELECT * FROM users WHERE token = ?", token).Scan(&user).Error; err != nil {

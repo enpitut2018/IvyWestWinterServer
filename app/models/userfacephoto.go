@@ -5,8 +5,9 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
-type Download struct {
+type UserFacePhoto struct {
 	gorm.Model
-	Userid   string
-	PhotoUrl string
+	XID    string
+	Userid string
+	Url    string
 }
