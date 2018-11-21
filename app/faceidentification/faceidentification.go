@@ -1,25 +1,18 @@
 package faceidentification
 
 import (
-	"github.com/enpitut2018/IvyWestWinterServer/app/dbutils"
+	"github.com/enpitut2018/IvyWestWinterServer/app/models"
+	"github.com/jinzhu/gorm"
+	"net/http"
 )
 
-func FaceIdentification(photourl string) {
-	db := dbutils.ConnectPostgres()
-	defer db.Close()
-
+func FaceIdentification(db *gorm.DB, w http.ResponseWriter, url string) {
 	// face identification by Azure API
 	// 今回はユーザーが全員写っていると想定する。
-	var users []dbutils.User
-	if err := db.Raw("SELECT * FROM users").Scan(&users).Error; err != nil {
-		panic("can't Identification")
-	}
-	for _, user := range users {
-		var download dbutils.Download
-		download.Userid = user.Userid
-		download.PhotoUrl = photourl
-		if err := db.Create(&download).Error; err != nil {
-			panic("Can't make record")
-		}
+	var users models.Users
+	users.GetAllUsers(db, w)
+	for _, user := range users.Users {
+		download := models.Download{Userid: user.Userid, Url: url}
+		download.CreateRecord(db, w)
 	}
 }
