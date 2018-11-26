@@ -15,7 +15,7 @@ func GetUploads(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	var user models.User
 	token := r.Header.Get("Authorization")
 	user.GetUserFromToken(db, w, token)
-	uploads.GetPhotosByUserId(db, w, user.Userid)
+	uploads.GetPhotosByUserID(db, w, user.UserID)
 	httputils.RespondJson(w, http.StatusOK, uploads.Uploads)
 }
 
@@ -32,17 +32,17 @@ func CreateUploads(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 		panic(err.Error())
 	}
 
-	urlBase := "https://s3-ap-northeast-1.amazonaws.com/ivy-west-winter/upload-photos"
-	url := awsutils.UploadPhoto(w, source.Source, urlBase)
+	s3FolderPath := "/upload-photos"
+	url := awsutils.UploadPhoto(w, source.Source, s3FolderPath)
 
 	var user models.User
 	user.GetUserFromToken(db, w, token)
-	upload := models.Upload{Userid: user.Userid, Url: url}
+	upload := models.Upload{UserID: user.UserID, URL: url}
 	upload.CreateRecord(db, w)
 
 	// face identification
 	// 顔認識技術を使用してDownloadテーブルにレコードを追加する。
-	faceidentification.FaceIdentification(db, w, upload.Url)
+	faceidentification.FaceIdentification(db, w, upload.URL)
 
 	httputils.RespondJson(w, http.StatusOK, upload)
 }

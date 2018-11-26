@@ -20,7 +20,7 @@ var (
 	SECRET_KEY = os.Getenv("AWS_SECRET_KEY")
 )
 
-func UploadPhoto(w http.ResponseWriter, base64Str string, urlBase string) string {
+func UploadPhoto(w http.ResponseWriter, base64Str string, s3FolderPath string) string {
 	data, err := base64.StdEncoding.DecodeString(base64Str)
 	if err != nil {
 		httputils.RespondError(w, http.StatusBadRequest, err.Error())
@@ -28,11 +28,11 @@ func UploadPhoto(w http.ResponseWriter, base64Str string, urlBase string) string
 	}
 	guid := xid.New() // xidというユニークなID
 	imageFileName := guid.String()+".jpg"
-	if false == UploadS3(data, imageFileName) {
+	if false == UploadS3(data, filepath.Join(s3FolderPath ,imageFileName)) {
 		httputils.RespondError(w, http.StatusInternalServerError, "Can't upload the photo.")
 		panic("Can't upload the photo.")
 	}
-	return filepath.Join(urlBase, imageFileName)
+	return filepath.Join("https://s3-ap-northeast-1.amazonaws.com/ivy-west-winter", s3FolderPath, imageFileName)
 }
 
 func getS3Client() *s3.S3 {
