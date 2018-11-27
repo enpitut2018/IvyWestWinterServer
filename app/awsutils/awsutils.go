@@ -32,7 +32,7 @@ func UploadPhoto(w http.ResponseWriter, base64Str string, s3FolderPath string) s
 		httputils.RespondError(w, http.StatusInternalServerError, "Can't upload the photo.")
 		panic("Can't upload the photo.")
 	}
-	return filepath.Join("https://s3-ap-northeast-1.amazonaws.com/ivy-west-winter", s3FolderPath, imageFileName)
+	return "https://s3-ap-northeast-1.amazonaws.com" + filepath.Join("/ivy-west-winter", s3FolderPath, imageFileName)
 }
 
 func getS3Client() *s3.S3 {

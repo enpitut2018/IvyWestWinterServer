@@ -23,6 +23,12 @@ type SourceRequest struct {
 	Source string
 }
 
+type UploadResponse struct {
+	UserID string `json:"userid"`
+	URL string `json:"url"`
+	DownloadUserIDs []string `json:"downloadUserIds"`
+}
+
 func CreateUploads(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	token := r.Header.Get("Authorization")
 	var source SourceRequest
@@ -40,11 +46,10 @@ func CreateUploads(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	upload := models.Upload{UserID: user.UserID, URL: url}
 	upload.CreateRecord(db, w)
 
-	// face identification
 	// 顔認識技術を使用してDownloadテーブルにレコードを追加する。
-	faceidentification.FaceIdentification(db, w, upload.URL)
-
-	httputils.RespondJson(w, http.StatusOK, upload)
+	downloadUserIDs := faceidentification.FaceIdentification(db, w, upload.URL)
+	res := UploadResponse{UserID: upload.UserID, URL: upload.URL, DownloadUserIDs: downloadUserIDs}
+	httputils.RespondJson(w, http.StatusOK, res)
 }
 
 func DeleteUploads(w http.ResponseWriter, r *http.Request, db *gorm.DB) {

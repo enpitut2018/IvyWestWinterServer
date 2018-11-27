@@ -1,7 +1,6 @@
 package userauth
 
 import (
-	"fmt"
 	"encoding/json"
 	"github.com/enpitut2018/IvyWestWinterServer/app/httputils"
 	"github.com/enpitut2018/IvyWestWinterServer/app/models"
@@ -29,6 +28,7 @@ func Signup(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	} else {
 		user.UserID = requser.UserID
 		user.Password = requser.Password
+		user.AzurePersonID = "0b4bbd63-ff70-423b-9aff-5263c745ff98"  // 福山雅治の顔
 		if ok := user.CreateUserRecord(db, w); ok {
 			httputils.RespondJson(w, http.StatusOK, map[string]string{"message": "Success to create new user."})
 		}
@@ -46,8 +46,6 @@ func Signin(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	var user models.User
 	user.SelectByUserID(db, requser.UserID)
 	if user.UserID != requser.UserID {
-		fmt.Printf("%+v\n", user)
-		fmt.Printf("%+v\n", requser)
 		httputils.RespondError(w, http.StatusBadRequest, "UserID is not found.")
 	} else {
 		if user.Password != requser.Password {
