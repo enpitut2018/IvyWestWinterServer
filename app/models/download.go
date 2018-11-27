@@ -26,7 +26,7 @@ func (download *Download) CreateRecord(db *gorm.DB, w http.ResponseWriter) bool 
 }
 
 func (downloads *Downloads) GetDownloadsByUserID(db *gorm.DB, w http.ResponseWriter, userID string) bool {
-	if err := db.Find(&downloads.Downloads, "userID = ?", userID).Error; err != nil{
+	if err := db.Find(&downloads.Downloads, "user_id = ?", userID).Error; err != nil{
 		httputils.RespondError(w, http.StatusBadRequest, err.Error())
 		panic(err.Error())
 	}
