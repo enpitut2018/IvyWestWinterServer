@@ -17,7 +17,7 @@ func GetDownloads(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	user.GetUserFromToken(db, w, token)
 	
 	var downloads models.Downloads
-	downloads.GetDownloadsByUserId(db, w, user.Userid)
+	downloads.GetDownloadsByUserID(db, w, user.UserID)
 	httputils.RespondJson(w, http.StatusOK, downloads.Downloads)
 }
 

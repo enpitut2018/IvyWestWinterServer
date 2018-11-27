@@ -10,7 +10,7 @@ import (
 )
 
 type SignupRequest struct {
-	Userid    string `json:"userid"`
+	UserID    string `json:"userid"`
 	Password string `json:"password"`
 }
 
@@ -22,12 +22,13 @@ func Signup(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	}
 
 	var user models.User
-	user.SelectByUserId(db, requser.Userid)
-	if user.Userid == requser.Userid {
-		httputils.RespondError(w, http.StatusBadRequest, "Userid is already exists.")
+	user.SelectByUserID(db, requser.UserID)
+	if user.UserID == requser.UserID {
+		httputils.RespondError(w, http.StatusBadRequest, "UserID is already exists.")
 	} else {
-		user.Userid = requser.Userid
+		user.UserID = requser.UserID
 		user.Password = requser.Password
+		user.AzurePersonID = "0b4bbd63-ff70-423b-9aff-5263c745ff98"  // 福山雅治の顔
 		if ok := user.CreateUserRecord(db, w); ok {
 			httputils.RespondJson(w, http.StatusOK, map[string]string{"message": "Success to create new user."})
 		}
@@ -43,9 +44,9 @@ func Signin(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	}
 
 	var user models.User
-	user.SelectByUserId(db, requser.Userid)
-	if user.Userid != requser.Userid {
-		httputils.RespondError(w, http.StatusBadRequest, "Userid is not found.")
+	user.SelectByUserID(db, requser.UserID)
+	if user.UserID != requser.UserID {
+		httputils.RespondError(w, http.StatusBadRequest, "UserID is not found.")
 	} else {
 		if user.Password != requser.Password {
 			httputils.RespondError(w, http.StatusBadRequest, "Password is different.")

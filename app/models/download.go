@@ -9,8 +9,8 @@ import (
 
 type Download struct {
 	gorm.Model `json:"-"`
-	Userid   string `json:"userid"`
-	Url string `json:"url"`
+	UserID   string `json:"userid"`
+	URL string `json:"url"`
 }
 
 type Downloads struct {
@@ -21,18 +21,14 @@ func (download *Download) CreateRecord(db *gorm.DB, w http.ResponseWriter) bool 
 	if err := db.Create(&download).Error; err != nil {
 		httputils.RespondError(w, http.StatusInternalServerError, "Can't make record.")
 		panic("Can't make record.")
-		return false
-	} else {
-		return true
 	}
+	return true
 }
 
-func (downloads *Downloads) GetDownloadsByUserId(db *gorm.DB, w http.ResponseWriter, userid string) bool {
-	if err := db.Find(&downloads.Downloads, "userid = ?", userid).Error; err != nil{
+func (downloads *Downloads) GetDownloadsByUserID(db *gorm.DB, w http.ResponseWriter, userID string) bool {
+	if err := db.Find(&downloads.Downloads, "userID = ?", userID).Error; err != nil{
 		httputils.RespondError(w, http.StatusBadRequest, err.Error())
 		panic(err.Error())
-		return false
-	} else {
-		return true
 	}
+	return true
 }

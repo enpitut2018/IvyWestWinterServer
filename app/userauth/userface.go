@@ -22,11 +22,11 @@ func UploadUserFace(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 		httputils.RespondError(w, http.StatusBadRequest, err.Error())
 	}
 
-	urlBase := "https://s3-ap-northeast-1.amazonaws.com/ivy-west-winter/user-face-photos"
-	urlStr := awsutils.UploadPhoto(w, source.Source, urlBase)
+	s3FolderPath := "/user-face-photos"
+	urlStr := awsutils.UploadPhoto(w, source.Source, s3FolderPath)
 
 	var user models.User
 	user.GetUserFromToken(db, w, token)
-	user.UpdateAbaterUrl(db, w, urlStr)
+	user.UpdateAbaterURL(db, w, urlStr)
 	httputils.RespondJson(w, http.StatusOK, user)
 }
