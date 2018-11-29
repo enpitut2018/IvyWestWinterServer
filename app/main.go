@@ -1,15 +1,15 @@
 package main
 
 import (
-	"fmt"
-	"log"
 	"net/http"
 	"os"
 
-	"./downloads"
-	"./uploads"
-	"./userauth"
-	"./models"
+	l "github.com/sirupsen/logrus"
+
+	"github.com/enpitut2018/IvyWestWinterServer/app/downloads"
+	"github.com/enpitut2018/IvyWestWinterServer/app/models"
+	"github.com/enpitut2018/IvyWestWinterServer/app/uploads"
+	"github.com/enpitut2018/IvyWestWinterServer/app/userauth"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -17,7 +17,7 @@ import (
 
 type App struct {
 	Router *mux.Router
-	DB *gorm.DB
+	DB     *gorm.DB
 }
 
 func (app *App) Initialize() {
@@ -26,7 +26,7 @@ func (app *App) Initialize() {
 	if err != nil {
 		panic("Failed to connect to database")
 	}
-	// defer app.DB.Close()
+
 	app.DB.DB().SetMaxIdleConns(0)
 	app.DB.AutoMigrate(&models.User{}, &models.Upload{}, &models.Download{})
 }
@@ -44,7 +44,7 @@ func (app *App) Run() {
 	myRouter.HandleFunc("/signup", handlerWithDB(userauth.Signup, app.DB)).Methods("POST")
 	myRouter.HandleFunc("/signin", handlerWithDB(userauth.Signin, app.DB)).Methods("POST")
 	myRouter.HandleFunc("/user", handlerWithDB(userauth.GetUserInfo, app.DB)).Methods("GET")
-	log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), myRouter))
+	l.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), myRouter))
 }
 
 func handlerWithDB(fn func(w http.ResponseWriter, r *http.Request, DB *gorm.DB), DB *gorm.DB) http.HandlerFunc {
@@ -56,6 +56,7 @@ func handlerWithDB(fn func(w http.ResponseWriter, r *http.Request, DB *gorm.DB),
 func main() {
 	app := App{}
 	app.Initialize()
-	fmt.Println("\n------ connect start localhost:8080/ -------\n")
+	l.SetReportCaller(true)
+	l.Infof("connect localhost:8080/")
 	app.Run()
 }

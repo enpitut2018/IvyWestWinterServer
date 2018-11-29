@@ -1,21 +1,23 @@
 package models
 
 import (
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"crypto/md5"
 	"encoding/hex"
-	"strings"
 	"net/http"
+	"strings"
+
 	"github.com/enpitut2018/IvyWestWinterServer/app/httputils"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
+	l "github.com/sirupsen/logrus"
 )
 
 type User struct {
-	gorm.Model `json:"-"`
-	UserID   string `gorm:"not null;unique"  json:"userid"`
-	AbaterURL string `json:"abaterurl"`
-	Password string	`json:"-"`
-	Token    string `gorm:"not null;unique" json:"token"`
+	gorm.Model    `json:"-"`
+	UserID        string `gorm:"not null;unique"  json:"userid"`
+	AbaterURL     string `json:"abaterurl"`
+	Password      string `json:"-"`
+	Token         string `gorm:"not null;unique" json:"token"`
 	AzurePersonID string `json:"-"`
 }
 
@@ -32,9 +34,10 @@ func getToken(userID string) string {
 func (user *User) GetUserFromToken(db *gorm.DB, w http.ResponseWriter, token string) bool {
 	if err := db.Find(&user, "token = ?", token).Error; err != nil {
 		httputils.RespondError(w, http.StatusUnauthorized, "Not valid token.")
-		panic("Not valid token.")
+		l.Errorf("Not valid token.")
+		return false
 	}
-	return true 
+	return true
 }
 
 func (user *User) SelectByUserID(db *gorm.DB, userID string) bool {
@@ -48,7 +51,7 @@ func (user *User) CreateUserRecord(db *gorm.DB, w http.ResponseWriter) bool {
 	user.Token = getToken(user.UserID)
 	if err := db.Create(&user).Error; err != nil {
 		httputils.RespondError(w, http.StatusInternalServerError, err.Error())
-		panic(err.Error())
+		l.Errorf(err.Error())
 		return false
 	} else {
 		return true
@@ -58,8 +61,8 @@ func (user *User) CreateUserRecord(db *gorm.DB, w http.ResponseWriter) bool {
 func (user *User) UpdateAbaterURL(db *gorm.DB, w http.ResponseWriter, abaterurl string) bool {
 	user.AbaterURL = abaterurl
 	if err := db.Save(&user).Error; err != nil {
-		httputils.RespondError(w, http.StatusInternalServerError, "Can't Update AbaterURL.")
-		panic("Can't Update AbaterURL.")
+		httputils.RespondError(w, http.StatusInternalServerError, err.Error())
+		l.Errorf(err.Error())
 		return false
 	}
 	return true
@@ -67,7 +70,9 @@ func (user *User) UpdateAbaterURL(db *gorm.DB, w http.ResponseWriter, abaterurl 
 }
 
 func (users *Users) GetAllUsers(db *gorm.DB, w http.ResponseWriter) bool {
-	if err := db.Find(&users.Users).Error; err != nil{
+	if err := db.Find(&users.Users).Error; err != nil {
+		httputils.RespondError(w, http.StatusInternalServerError, err.Error())
+		l.Errorf(err.Error())
 		return false
 	}
 	return true

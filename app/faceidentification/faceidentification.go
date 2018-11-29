@@ -1,92 +1,103 @@
 package faceidentification
 
 import (
-	"fmt"
-	"github.com/enpitut2018/IvyWestWinterServer/app/httputils"
 	"bytes"
 	"encoding/json"
-	"github.com/enpitut2018/IvyWestWinterServer/app/models"
-	"github.com/jinzhu/gorm"
 	"net/http"
 	"os"
+
+	"github.com/enpitut2018/IvyWestWinterServer/app/httputils"
+	"github.com/enpitut2018/IvyWestWinterServer/app/models"
+	"github.com/jinzhu/gorm"
+	l "github.com/sirupsen/logrus"
 )
 
 var (
 	personGroupID = "ivy-west-winter-test"
-) 
+)
 
 type FaceDetectRequest struct {
 	URL string `json:"url"`
 }
 
 type FaceDetectResponse struct {
-	FaceID string
-	FaceRectangle interface{}
+	FaceID         string
+	FaceRectangle  interface{}
 	FaceAttributes interface{}
 }
 
 type FaceVerifyRequest struct {
-	FaceID string `json:"faceId"`
-	PersonID string `json:"personId"`
+	FaceID        string `json:"faceId"`
+	PersonID      string `json:"personId"`
 	PersonGroupID string `json:"personGroupId"`
 }
 
 type FaceVerifyResponse struct {
 	IsIdentical bool
-	Confidence float32
+	Confidence  float32
 }
 
-func PostAzureApi(url string, inJSON interface{}, outJSON interface{}, w http.ResponseWriter) {
+func PostAzureApi(url string, inJSON interface{}, outJSON interface{}, w http.ResponseWriter) bool {
 	body := new(bytes.Buffer)
 	json.NewEncoder(body).Encode(inJSON)
 	req, _ := http.NewRequest("POST", url, body)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Ocp-Apim-Subscription-Key", os.Getenv("AZURE_FACE_KEY"))
 	client := &http.Client{}
-    if res, _ := client.Do(req); res.StatusCode != 200 {
+	if res, _ := client.Do(req); res.StatusCode != 200 {
 		httputils.RespondError(w, http.StatusBadRequest, res.Status)
-		panic(res.Status)
+		l.Errorf(res.Status)
+		return false
 	} else {
 		decoder := json.NewDecoder(res.Body)
 		if err := decoder.Decode(&outJSON); err != nil {
 			httputils.RespondError(w, http.StatusBadRequest, err.Error())
-			panic(err.Error())
+			l.Errorf(err.Error())
+			return false
+		} else {
+			return true
 		}
 	}
-} 
+}
 
-func FaceDetect(url string, w http.ResponseWriter) (faceDetectResList []FaceDetectResponse) {
+func FaceDetect(url string, w http.ResponseWriter) (faceDetectResList []FaceDetectResponse, ok bool) {
 	faceDetectURL := "https://japaneast.api.cognitive.microsoft.com/face/v1.0/detect"
 	inJSON := FaceDetectRequest{URL: url}
 	PostAzureApi(faceDetectURL, inJSON, &faceDetectResList, w)
-	return faceDetectResList
+	return faceDetectResList, true
 }
 
-func FaceVerify(faceID string, personID string, w http.ResponseWriter) (faceVerifyRes FaceVerifyResponse) {
+func FaceVerify(faceID string, personID string, w http.ResponseWriter) (faceVerifyRes FaceVerifyResponse, ok bool) {
 	faceVerifyURL := "https://japaneast.api.cognitive.microsoft.com/face/v1.0/verify"
 	inJSON := FaceVerifyRequest{FaceID: faceID, PersonID: personID, PersonGroupID: personGroupID}
 	PostAzureApi(faceVerifyURL, inJSON, &faceVerifyRes, w)
-	return faceVerifyRes
+	return faceVerifyRes, true
 }
 
-func FaceIdentification(db *gorm.DB, w http.ResponseWriter, url string) []string {
+func FaceIdentification(db *gorm.DB, w http.ResponseWriter, url string) ([]string, bool) {
 	var allusers models.Users
 	allusers.GetAllUsers(db, w)
 
-	faceDetectResList := FaceDetect(url, w)
-	fmt.Printf("faceDetectResList: %+v\n\n", faceDetectResList)
-
-	downloadUserIDs := make([]string, 0)
-	for _, faceDetectRes := range faceDetectResList {
-		for _, user := range allusers.Users {
-			faceVerifyRes := FaceVerify(faceDetectRes.FaceID, user.AzurePersonID, w)
-			fmt.Printf("faceVerifyRes: %+v\n\n", faceVerifyRes)
-			if faceVerifyRes.IsIdentical == true {
-				download := models.Download{UserID: user.UserID, URL: url}
-				download.CreateRecord(db, w)
-				downloadUserIDs = append(downloadUserIDs, download.UserID)
+	if faceDetectResList, ok := FaceDetect(url, w); ok {
+		l.Debugf("faceDetectResList: %+v\n\n", faceDetectResList)
+		downloadUserIDs := make([]string, 0)
+		for _, faceDetectRes := range faceDetectResList {
+			for _, user := range allusers.Users {
+				if faceVerifyRes, ok := FaceVerify(faceDetectRes.FaceID, user.AzurePersonID, w); ok {
+					l.Debugf("faceVerifyRes: %+v\n\n", faceVerifyRes)
+					if faceVerifyRes.IsIdentical == true {
+						download := models.Download{UserID: user.UserID, URL: url}
+						if ok := download.CreateRecord(db, w); ok {
+							downloadUserIDs = append(downloadUserIDs, download.UserID)
+						} else {
+							return nil, false
+						}
+					}
+				}
 			}
 		}
+		return downloadUserIDs, true
+	} else {
+		return nil, false
 	}
-	return downloadUserIDs
 }

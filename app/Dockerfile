@@ -8,6 +8,7 @@ RUN apk add --no-cache git gcc && \
   go get github.com/gorilla/mux && \
   go get github.com/lib/pq &&\
   go get github.com/rs/xid && \
-  go get github.com/aws/aws-sdk-go
+  go get github.com/aws/aws-sdk-go && \
+  go get github.com/sirupsen/logrus
 
 WORKDIR /go/src/github.com/enpitut2018/IvyWestWinterServer
