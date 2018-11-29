@@ -1,21 +1,21 @@
 package models
 
 import (
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"crypto/md5"
 	"encoding/hex"
-	"strings"
-	"net/http"
 	"github.com/enpitut2018/IvyWestWinterServer/app/httputils"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"net/http"
+	"strings"
 )
 
 type User struct {
-	gorm.Model `json:"-"`
-	UserID   string `gorm:"not null;unique"  json:"userid"`
-	AbaterURL string `json:"abaterurl"`
-	Password string	`json:"-"`
-	Token    string `gorm:"not null;unique" json:"token"`
+	gorm.Model    `json:"-"`
+	UserID        string `gorm:"not null;unique"  json:"userid"`
+	AvatarURL     string `json:"avatarurl"`
+	Password      string `json:"-"`
+	Token         string `gorm:"not null;unique" json:"token"`
 	AzurePersonID string `json:"-"`
 }
 
@@ -34,7 +34,7 @@ func (user *User) GetUserFromToken(db *gorm.DB, w http.ResponseWriter, token str
 		httputils.RespondError(w, http.StatusUnauthorized, "Not valid token.")
 		panic("Not valid token.")
 	}
-	return true 
+	return true
 }
 
 func (user *User) SelectByUserID(db *gorm.DB, userID string) bool {
@@ -55,11 +55,11 @@ func (user *User) CreateUserRecord(db *gorm.DB, w http.ResponseWriter) bool {
 	}
 }
 
-func (user *User) UpdateAbaterURL(db *gorm.DB, w http.ResponseWriter, abaterurl string) bool {
-	user.AbaterURL = abaterurl
+func (user *User) UpdateAvatarURL(db *gorm.DB, w http.ResponseWriter, avatarurl string) bool {
+	user.AvatarURL = avatarurl
 	if err := db.Save(&user).Error; err != nil {
-		httputils.RespondError(w, http.StatusInternalServerError, "Can't Update AbaterURL.")
-		panic("Can't Update AbaterURL.")
+		httputils.RespondError(w, http.StatusInternalServerError, "Can't Update AvatarURL.")
+		panic("Can't Update AvatarURL.")
 		return false
 	}
 	return true
@@ -67,7 +67,7 @@ func (user *User) UpdateAbaterURL(db *gorm.DB, w http.ResponseWriter, abaterurl 
 }
 
 func (users *Users) GetAllUsers(db *gorm.DB, w http.ResponseWriter) bool {
-	if err := db.Find(&users.Users).Error; err != nil{
+	if err := db.Find(&users.Users).Error; err != nil {
 		return false
 	}
 	return true
