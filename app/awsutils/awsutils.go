@@ -4,15 +4,15 @@ import (
 	"bytes"
 	"os"
 
+	"encoding/base64"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"net/http"
-	"encoding/base64"
-	"path/filepath"
 	"github.com/enpitut2018/IvyWestWinterServer/app/httputils"
 	"github.com/rs/xid"
+	"net/http"
+	"path/filepath"
 )
 
 var (
@@ -27,8 +27,8 @@ func UploadPhoto(w http.ResponseWriter, base64Str string, s3FolderPath string) s
 		panic("can't decode base64")
 	}
 	guid := xid.New() // xidというユニークなID
-	imageFileName := guid.String()+".jpg"
-	if false == UploadS3(data, filepath.Join(s3FolderPath ,imageFileName)) {
+	imageFileName := guid.String() + ".jpg"
+	if false == UploadS3(data, filepath.Join(s3FolderPath, imageFileName)) {
 		httputils.RespondError(w, http.StatusInternalServerError, "Can't upload the photo.")
 		panic("Can't upload the photo.")
 	}

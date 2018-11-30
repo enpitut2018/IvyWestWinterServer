@@ -1,16 +1,20 @@
 package models
 
 import (
+	"github.com/enpitut2018/IvyWestWinterServer/app/httputils"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"github.com/enpitut2018/IvyWestWinterServer/app/httputils"
 	"net/http"
+	"time"
 )
 
 type Upload struct {
-	gorm.Model `json:"-"`
-	UserID string `json:"userid"`
-	URL    string `json:"url"`
+	ID        uint       `gorm:"primary_key" json:"id"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"-"`
+	DeletedAt *time.Time `sql:"index" json:"-"`
+	UserID    string     `json:"userid"`
+	URL       string     `json:"url"`
 }
 
 type Uploads struct {
@@ -26,7 +30,7 @@ func (upload *Upload) CreateRecord(db *gorm.DB, w http.ResponseWriter) bool {
 }
 
 func (uploads *Uploads) GetPhotosByUserID(db *gorm.DB, w http.ResponseWriter, userid string) bool {
-	if err := db.Find(&uploads.Uploads, "userid = ?", userid).Error; err != nil{
+	if err := db.Find(&uploads.Uploads, "user_id = ?", userid).Error; err != nil {
 		httputils.RespondError(w, http.StatusBadRequest, err.Error())
 		panic(err.Error())
 	}
