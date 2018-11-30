@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/enpitut2018/IvyWestWinterServer/app/faceidentification"
 	"github.com/enpitut2018/IvyWestWinterServer/app/httputils"
 	"github.com/enpitut2018/IvyWestWinterServer/app/models"
 	"github.com/jinzhu/gorm"
@@ -36,7 +37,9 @@ func Signup(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 
 	user.UserID = requser.UserID
 	user.Password = requser.Password
-	user.AzurePersonID = "0b4bbd63-ff70-423b-9aff-5263c745ff98" // 福山雅治の顔
+	// user.AzurePersonID = "0b4bbd63-ff70-423b-9aff-5263c745ff98" // 福山雅治の顔
+	azurePersonID := faceidentification.CreatePerson(user.UserID, "My name is "+user.UserID, w)
+	user.AzurePersonID = azurePersonID
 	if err := user.CreateUserRecord(db); err != nil {
 		httputils.RespondError(w, http.StatusBadRequest, err.Error())
 		l.Errorf(err.Error())

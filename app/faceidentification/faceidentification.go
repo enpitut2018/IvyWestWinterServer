@@ -36,6 +36,15 @@ type FaceVerifyResponse struct {
 	Confidence  float32
 }
 
+type CreatePersonRequest struct {
+	Name     string `json:name`
+	UserData string `json:userData`
+}
+
+type CreatePersonResponse struct {
+	PersonID string
+}
+
 func PostAzureApi(url string, inJSON interface{}, outJSON interface{}, w http.ResponseWriter) error {
 	body := new(bytes.Buffer)
 	json.NewEncoder(body).Encode(inJSON)
@@ -68,13 +77,21 @@ func FaceVerify(faceID string, personID string, w http.ResponseWriter) (faceVeri
 	return faceVerifyRes, err
 }
 
+func CreatePerson(name string, userData string, w http.ResponseWriter) (string, error) {
+	createPersonURL := "https://japaneast.api.cognitive.microsoft.com/face/v1.0/persongroups/" + personGroupID + "/persons"
+	inJSON := CreatePersonRequest{Name: name, UserData: userData}
+	var createPersonRes CreatePersonResponse
+	err := PostAzureApi(createPersonURL, inJSON, &createPersonRes, w)
+	return createPersonRes.PersonID, err
+}
+
 func FaceIdentification(db *gorm.DB, w http.ResponseWriter, url string) ([]string, error) {
 	var allusers models.Users
 	allusers.GetAllUsers(db)
 
 	faceDetectResList, err := FaceDetect(url, w)
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 
 	l.Debugf("faceDetectResList: %+v\n\n", faceDetectResList)
