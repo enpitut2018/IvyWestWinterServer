@@ -1,23 +1,26 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
 
-	"./downloads"
-	"./models"
-	"./uploads"
-	"./userauth"
+	l "github.com/sirupsen/logrus"
+
+	"github.com/enpitut2018/IvyWestWinterServer/app/downloads"
+	"github.com/enpitut2018/IvyWestWinterServer/app/models"
+	"github.com/enpitut2018/IvyWestWinterServer/app/uploads"
+	"github.com/enpitut2018/IvyWestWinterServer/app/userauth"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	_ "github.com/labstack/echo"
 )
 
 type App struct {
 	Router *mux.Router
-	DB     *gorm.DB
+	//e      *echo.Echo
+	DB *gorm.DB
 }
 
 func (app *App) Initialize() {
@@ -26,25 +29,36 @@ func (app *App) Initialize() {
 	if err != nil {
 		panic("Failed to connect to database")
 	}
-	// defer app.DB.Close()
 	app.DB.DB().SetMaxIdleConns(0)
 	app.DB.AutoMigrate(&models.User{}, &models.Upload{}, &models.Download{})
+
+	// app.e := echo.New()
+	// app.e.Use(middleware.Logger())
+	// app.e.Use(middleware.Recover())
 }
 
 func (app *App) Run() {
 	defer app.DB.Close()
-	myRouter := mux.NewRouter().StrictSlash(true)
-	myRouter.HandleFunc("/downloads", handlerWithDB(downloads.CreateDownloads, app.DB)).Methods("POST")
-	myRouter.HandleFunc("/downloads", handlerWithDB(downloads.GetDownloads, app.DB)).Methods("GET")
-	myRouter.HandleFunc("/downloads", handlerWithDB(downloads.DeleteDownloads, app.DB)).Methods("DELETE")
-	myRouter.HandleFunc("/uploads", handlerWithDB(uploads.CreateUploads, app.DB)).Methods("POST")
-	myRouter.HandleFunc("/uploads", handlerWithDB(uploads.GetUploads, app.DB)).Methods("GET")
-	myRouter.HandleFunc("/uploads", handlerWithDB(uploads.DeleteUploads, app.DB)).Methods("DELETE")
-	myRouter.HandleFunc("/uploadUserFace", handlerWithDB(userauth.UploadUserFace, app.DB)).Methods("POST")
-	myRouter.HandleFunc("/signup", handlerWithDB(userauth.Signup, app.DB)).Methods("POST")
-	myRouter.HandleFunc("/signin", handlerWithDB(userauth.Signin, app.DB)).Methods("POST")
-	myRouter.HandleFunc("/user", handlerWithDB(userauth.GetUserInfo, app.DB)).Methods("GET")
-	log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), myRouter))
+	// app.e.GET("/downloads", downloads.CreateDownloads(app.DB))
+	// app.e.POST("/uploads", uploads.CreateUploads(app.DB))
+	// app.e.POST("/signup", userauth.Signup(app.DB))
+	// app.e.POST("/signin", userauth.Signin(app.DB))
+	// app.e.GET("/user", userauth.GetUserInfo(app.DB))
+	// l.Fatal(app.e.Start(":" + os.Getenv("PORT")))
+
+	app.Router = mux.NewRouter().StrictSlash(true)
+	app.Router.HandleFunc("/downloads", handlerWithDB(downloads.CreateDownloads, app.DB)).Methods("POST")
+	app.Router.HandleFunc("/downloads", handlerWithDB(downloads.GetDownloads, app.DB)).Methods("GET")
+	app.Router.HandleFunc("/downloads", handlerWithDB(downloads.DeleteDownloads, app.DB)).Methods("DELETE")
+	app.Router.HandleFunc("/uploads", handlerWithDB(uploads.CreateUploads, app.DB)).Methods("POST")
+	app.Router.HandleFunc("/uploads", handlerWithDB(uploads.GetUploads, app.DB)).Methods("GET")
+	app.Router.HandleFunc("/uploads", handlerWithDB(uploads.DeleteUploads, app.DB)).Methods("DELETE")
+	app.Router.HandleFunc("/uploadUserFace", handlerWithDB(userauth.UploadUserFace, app.DB)).Methods("POST")
+	app.Router.HandleFunc("/signup", handlerWithDB(userauth.Signup, app.DB)).Methods("POST")
+	app.Router.HandleFunc("/signin", handlerWithDB(userauth.Signin, app.DB)).Methods("POST")
+	app.Router.HandleFunc("/user", handlerWithDB(userauth.GetUserInfo, app.DB)).Methods("GET")
+	app.Router.Use(loggingMiddleware)
+	l.Info(http.ListenAndServe(":"+os.Getenv("PORT"), app.Router))
 }
 
 func handlerWithDB(fn func(w http.ResponseWriter, r *http.Request, DB *gorm.DB), DB *gorm.DB) http.HandlerFunc {
@@ -53,9 +67,17 @@ func handlerWithDB(fn func(w http.ResponseWriter, r *http.Request, DB *gorm.DB),
 	}
 }
 
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("%v %v", r.Method, r.RequestURI)
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
 	app := App{}
 	app.Initialize()
-	fmt.Println("\n------ connect start localhost:8080/ -------\n")
+	l.SetReportCaller(true)
+	l.Infof("connect localhost:8080/")
 	app.Run()
 }

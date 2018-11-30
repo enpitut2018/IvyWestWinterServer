@@ -3,10 +3,8 @@ package models
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"github.com/enpitut2018/IvyWestWinterServer/app/httputils"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"net/http"
 	"strings"
 )
 
@@ -29,46 +27,39 @@ func getToken(userID string) string {
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-func (user *User) GetUserFromToken(db *gorm.DB, w http.ResponseWriter, token string) bool {
+func (user *User) GetUserFromToken(db *gorm.DB, token string) error {
 	if err := db.Find(&user, "token = ?", token).Error; err != nil {
-		httputils.RespondError(w, http.StatusUnauthorized, "Not valid token.")
-		panic("Not valid token.")
+		return err
 	}
-	return true
+	return nil
 }
 
-func (user *User) SelectByUserID(db *gorm.DB, userID string) bool {
+func (user *User) SelectByUserID(db *gorm.DB, userID string) error {
 	if err := db.Find(&user, "user_id = ?", userID).Error; err != nil {
-		return false
+		return err
 	}
-	return true
+	return nil
 }
 
-func (user *User) CreateUserRecord(db *gorm.DB, w http.ResponseWriter) bool {
+func (user *User) CreateUserRecord(db *gorm.DB) error {
 	user.Token = getToken(user.UserID)
 	if err := db.Create(&user).Error; err != nil {
-		httputils.RespondError(w, http.StatusInternalServerError, err.Error())
-		panic(err.Error())
-		return false
-	} else {
-		return true
+		return err
 	}
+	return nil
 }
 
-func (user *User) UpdateAvatarURL(db *gorm.DB, w http.ResponseWriter, avatarurl string) bool {
+func (user *User) UpdateAvatarURL(db *gorm.DB, avatarurl string) error {
 	user.AvatarURL = avatarurl
 	if err := db.Save(&user).Error; err != nil {
-		httputils.RespondError(w, http.StatusInternalServerError, "Can't Update AvatarURL.")
-		panic("Can't Update AvatarURL.")
-		return false
+		return err
 	}
-	return true
-
+	return nil
 }
 
-func (users *Users) GetAllUsers(db *gorm.DB, w http.ResponseWriter) bool {
+func (users *Users) GetAllUsers(db *gorm.DB) error {
 	if err := db.Find(&users.Users).Error; err != nil {
-		return false
+		return err
 	}
-	return true
+	return nil
 }
