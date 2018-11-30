@@ -47,6 +47,16 @@ type CreatePersonResponse struct {
 	PersonID string
 }
 
+type AddUserFaceRequest struct{
+	URL string `json:"url"`
+}
+
+type AddUserFaceResponse struct{
+	PersistedFaceId string `json:"persistedFaceId"`
+
+}
+
+
 func PostAzureApi(url string, inJSON interface{}, outJSON interface{}, w http.ResponseWriter) {
 	body := new(bytes.Buffer)
 	json.NewEncoder(body).Encode(inJSON)
@@ -64,6 +74,15 @@ func PostAzureApi(url string, inJSON interface{}, outJSON interface{}, w http.Re
 			panic(err.Error())
 		}
 	}
+}
+
+
+func AddUserFace(url string, personID string, w http.ResponseWriter)(addUserFaceRes AddUserFaceResponse){
+	addUserFaceURL := "https://japaneast.api.cognitive.microsoft.com/face/v1.0/persongroups/ivy-west-winter-test/persons/"+ personID +"/persistedFaces"
+	inJSON := AddUserFaceRequest{URL: url}
+	PostAzureApi(addUserFaceURL, inJSON, &addUserFaceRes,w)
+	return addUserFaceRes
+
 }
 
 func FaceDetect(url string, w http.ResponseWriter) (faceDetectResList []FaceDetectResponse) {
