@@ -27,7 +27,7 @@ func (upload *Upload) CreateRecord(db *gorm.DB) error {
 }
 
 func (uploads *Uploads) GetPhotosByUserID(db *gorm.DB, userid string) error {
-	if err := db.Find(&uploads.Uploads, "userid = ?", userid).Error; err != nil {
+	if err := db.Find(&uploads.Uploads, "user_id = ?", userid).Error; err != nil {
 		return err
 	}
 	return nil
