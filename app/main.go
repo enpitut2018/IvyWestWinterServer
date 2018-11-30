@@ -14,13 +14,13 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"github.com/labstack/echo"
+	_ "github.com/labstack/echo"
 )
 
 type App struct {
 	Router *mux.Router
-	e      *echo.Echo
-	DB     *gorm.DB
+	//e      *echo.Echo
+	DB *gorm.DB
 }
 
 func (app *App) Initialize() {
@@ -77,7 +77,7 @@ func loggingMiddleware(next http.Handler) http.Handler {
 func main() {
 	app := App{}
 	app.Initialize()
-	// l.SetReportCaller(true)
+	l.SetReportCaller(true)
 	l.Infof("connect localhost:8080/")
 	app.Run()
 }

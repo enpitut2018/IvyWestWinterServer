@@ -29,6 +29,7 @@ func GetDownloads(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	}
 
 	httputils.RespondJson(w, http.StatusOK, downloads.Downloads)
+	l.Infof("Success.")
 }
 
 func DeleteDownloads(w http.ResponseWriter, r *http.Request, db *gorm.DB) {

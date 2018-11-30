@@ -3,11 +3,11 @@ package faceidentification
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/enpitut2018/IvyWestWinterServer/app/models"
+	"github.com/jinzhu/gorm"
 	"net/http"
 	"os"
 
-	"github.com/enpitut2018/IvyWestWinterServer/app/models"
-	"github.com/jinzhu/gorm"
 	l "github.com/sirupsen/logrus"
 )
 

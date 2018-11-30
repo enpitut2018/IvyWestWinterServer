@@ -35,9 +35,9 @@ func UploadUserFace(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 		return
 	}
 
-	if err := user.UpdateAbaterURL(db, urlStr); err != nil {
-		httputils.RespondError(w, http.StatusBadRequest, "Cannot update AvaterURL.")
-		l.Errorf("Cannot update AvaterURL.")
+	if err := user.UpdateAvatarURL(db, urlStr); err != nil {
+		httputils.RespondError(w, http.StatusBadRequest, "Cannot update AvatarURL.")
+		l.Errorf("Cannot update AvatarURL.")
 		return
 	}
 	httputils.RespondJson(w, http.StatusOK, user)

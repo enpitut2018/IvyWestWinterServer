@@ -11,7 +11,7 @@ import (
 type User struct {
 	gorm.Model    `json:"-"`
 	UserID        string `gorm:"not null;unique"  json:"userid"`
-	AbaterURL     string `json:"abaterurl"`
+	AvatarURL     string `json:"avatarurl"`
 	Password      string `json:"-"`
 	Token         string `gorm:"not null;unique" json:"token"`
 	AzurePersonID string `json:"-"`
@@ -49,8 +49,8 @@ func (user *User) CreateUserRecord(db *gorm.DB) error {
 	return nil
 }
 
-func (user *User) UpdateAbaterURL(db *gorm.DB, abaterurl string) error {
-	user.AbaterURL = abaterurl
+func (user *User) UpdateAvatarURL(db *gorm.DB, avatarurl string) error {
+	user.AvatarURL = avatarurl
 	if err := db.Save(&user).Error; err != nil {
 		return err
 	}
