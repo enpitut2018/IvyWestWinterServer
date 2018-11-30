@@ -7,9 +7,9 @@ import (
 	"os"
 
 	"./downloads"
+	"./models"
 	"./uploads"
 	"./userauth"
-	"./models"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -17,7 +17,7 @@ import (
 
 type App struct {
 	Router *mux.Router
-	DB *gorm.DB
+	DB     *gorm.DB
 }
 
 func (app *App) Initialize() {

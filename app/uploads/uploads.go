@@ -3,11 +3,11 @@ package uploads
 import (
 	"encoding/json"
 	"github.com/enpitut2018/IvyWestWinterServer/app/awsutils"
-	"github.com/enpitut2018/IvyWestWinterServer/app/models"
 	"github.com/enpitut2018/IvyWestWinterServer/app/faceidentification"
 	"github.com/enpitut2018/IvyWestWinterServer/app/httputils"
-	"net/http"
+	"github.com/enpitut2018/IvyWestWinterServer/app/models"
 	"github.com/jinzhu/gorm"
+	"net/http"
 )
 
 func GetUploads(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
@@ -24,8 +24,8 @@ type SourceRequest struct {
 }
 
 type UploadResponse struct {
-	UserID string `json:"userid"`
-	URL string `json:"url"`
+	UserID          string   `json:"userid"`
+	URL             string   `json:"url"`
 	DownloadUserIDs []string `json:"downloadUserIds"`
 }
 
