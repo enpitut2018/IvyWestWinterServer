@@ -10,7 +10,7 @@ import (
 )
 
 type SignupRequest struct {
-	UserID    string `json:"userid"`
+	UserID   string `json:"userid"`
 	Password string `json:"password"`
 }
 
@@ -28,7 +28,7 @@ func Signup(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	} else {
 		user.UserID = requser.UserID
 		user.Password = requser.Password
-		user.AzurePersonID = "0b4bbd63-ff70-423b-9aff-5263c745ff98"  // 福山雅治の顔
+		user.AzurePersonID = "0b4bbd63-ff70-423b-9aff-5263c745ff98" // 福山雅治の顔
 		if ok := user.CreateUserRecord(db, w); ok {
 			httputils.RespondJson(w, http.StatusOK, map[string]string{"message": "Success to create new user."})
 		}
@@ -59,7 +59,7 @@ func Signin(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 func GetUserInfo(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	var user models.User
 	token := r.Header.Get("Authorization")
-	if ok := user.GetUserFromToken(db, w, token);  !ok {
+	if ok := user.GetUserFromToken(db, w, token); !ok {
 		httputils.RespondError(w, http.StatusUnauthorized, "not valid token.")
 	} else {
 		httputils.RespondJson(w, http.StatusOK, user)

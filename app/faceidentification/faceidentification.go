@@ -1,10 +1,10 @@
 package faceidentification
 
 import (
-	"fmt"
-	"github.com/enpitut2018/IvyWestWinterServer/app/httputils"
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"github.com/enpitut2018/IvyWestWinterServer/app/httputils"
 	"github.com/enpitut2018/IvyWestWinterServer/app/models"
 	"github.com/jinzhu/gorm"
 	"net/http"
@@ -13,27 +13,27 @@ import (
 
 var (
 	personGroupID = "ivy-west-winter-test"
-) 
+)
 
 type FaceDetectRequest struct {
 	URL string `json:"url"`
 }
 
 type FaceDetectResponse struct {
-	FaceID string
-	FaceRectangle interface{}
+	FaceID         string
+	FaceRectangle  interface{}
 	FaceAttributes interface{}
 }
 
 type FaceVerifyRequest struct {
-	FaceID string `json:"faceId"`
-	PersonID string `json:"personId"`
+	FaceID        string `json:"faceId"`
+	PersonID      string `json:"personId"`
 	PersonGroupID string `json:"personGroupId"`
 }
 
 type FaceVerifyResponse struct {
 	IsIdentical bool
-	Confidence float32
+	Confidence  float32
 }
 
 func PostAzureApi(url string, inJSON interface{}, outJSON interface{}, w http.ResponseWriter) {
@@ -43,7 +43,7 @@ func PostAzureApi(url string, inJSON interface{}, outJSON interface{}, w http.Re
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Ocp-Apim-Subscription-Key", os.Getenv("AZURE_FACE_KEY"))
 	client := &http.Client{}
-    if res, _ := client.Do(req); res.StatusCode != 200 {
+	if res, _ := client.Do(req); res.StatusCode != 200 {
 		httputils.RespondError(w, http.StatusBadRequest, res.Status)
 		panic(res.Status)
 	} else {
@@ -53,7 +53,7 @@ func PostAzureApi(url string, inJSON interface{}, outJSON interface{}, w http.Re
 			panic(err.Error())
 		}
 	}
-} 
+}
 
 func FaceDetect(url string, w http.ResponseWriter) (faceDetectResList []FaceDetectResponse) {
 	faceDetectURL := "https://japaneast.api.cognitive.microsoft.com/face/v1.0/detect"
