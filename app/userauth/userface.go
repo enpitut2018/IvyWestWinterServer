@@ -7,6 +7,7 @@ import (
 	"github.com/enpitut2018/IvyWestWinterServer/app/awsutils"
 	"github.com/enpitut2018/IvyWestWinterServer/app/httputils"
 	"github.com/enpitut2018/IvyWestWinterServer/app/models"
+	"github.com/enpitut2018/IvyWestWinterServer/app/faceidentification"
 	"github.com/jinzhu/gorm"
 	l "github.com/sirupsen/logrus"
 )
@@ -41,5 +42,6 @@ func UploadUserFace(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 		return
 	}
 	httputils.RespondJson(w, http.StatusOK, user)
+	faceidentification.AddUserFace(urlStr,user.AzurePersonID,w)
 	l.Info("Success")
 }
