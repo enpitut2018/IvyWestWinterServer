@@ -8,9 +8,12 @@ import (
 )
 
 type Download struct {
-	gorm.Model `json:"-"`
-	UserID     string `json:"userid"`
-	URL        string `json:"url"`
+	ID        uint       `gorm:"primary_key" json:"id"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"-"`
+	DeletedAt *time.Time `sql:"index" json:"-"`
+	UserID    string     `json:"userid"`
+	URL       string     `json:"url"`
 }
 
 type Downloads struct {
