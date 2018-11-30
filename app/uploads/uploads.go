@@ -51,7 +51,7 @@ func CreateUploads(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 			upload := models.Upload{UserID: user.UserID, URL: url}
 			if ok := upload.CreateRecord(db, w); ok {
 				// 顔認識を使用してDownloadテーブルにレコードを追加する。
-				if downloadUserIDs, ok = faceidentification.FaceIdentification(db, w, upload.URL); ok {
+				if downloadUserIDs, ok := faceidentification.FaceIdentification(db, w, upload.URL); ok {
 					res := UploadResponse{UserID: upload.UserID, URL: upload.URL, DownloadUserIDs: downloadUserIDs}
 					httputils.RespondJson(w, http.StatusOK, res)
 					l.Infof("Success")

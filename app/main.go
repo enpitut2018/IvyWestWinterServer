@@ -13,10 +13,13 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 )
 
 type App struct {
-	Router *mux.Router
+	// Router *mux.Router
+	e      *echo.Echo
 	DB     *gorm.DB
 }
 
@@ -26,6 +29,9 @@ func (app *App) Initialize() {
 	if err != nil {
 		panic("Failed to connect to database")
 	}
+	app.e := echo.New()
+	app.e.Use(middleware.Logger())
+	app.e.Use(middleware.Recover())
 
 	app.DB.DB().SetMaxIdleConns(0)
 	app.DB.AutoMigrate(&models.User{}, &models.Upload{}, &models.Download{})
@@ -33,18 +39,24 @@ func (app *App) Initialize() {
 
 func (app *App) Run() {
 	defer app.DB.Close()
-	myRouter := mux.NewRouter().StrictSlash(true)
-	myRouter.HandleFunc("/downloads", handlerWithDB(downloads.CreateDownloads, app.DB)).Methods("POST")
-	myRouter.HandleFunc("/downloads", handlerWithDB(downloads.GetDownloads, app.DB)).Methods("GET")
-	myRouter.HandleFunc("/downloads", handlerWithDB(downloads.DeleteDownloads, app.DB)).Methods("DELETE")
-	myRouter.HandleFunc("/uploads", handlerWithDB(uploads.CreateUploads, app.DB)).Methods("POST")
-	myRouter.HandleFunc("/uploads", handlerWithDB(uploads.GetUploads, app.DB)).Methods("GET")
-	myRouter.HandleFunc("/uploads", handlerWithDB(uploads.DeleteUploads, app.DB)).Methods("DELETE")
-	myRouter.HandleFunc("/uploadUserFace", handlerWithDB(userauth.UploadUserFace, app.DB)).Methods("POST")
-	myRouter.HandleFunc("/signup", handlerWithDB(userauth.Signup, app.DB)).Methods("POST")
-	myRouter.HandleFunc("/signin", handlerWithDB(userauth.Signin, app.DB)).Methods("POST")
-	myRouter.HandleFunc("/user", handlerWithDB(userauth.GetUserInfo, app.DB)).Methods("GET")
-	l.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), myRouter))
+	app.e.GET("/downloads", downloads.CreateDownloads(app.DB))
+	app.e.POST("/uploads", uploads.CreateUploads(app.DB))
+	app.e.POST("/signup", userauth.Signup(app.DB))
+	app.e.POST("/signin", userauth.Signin(app.DB))
+	app.e.GET("/user", userauth.GetUserInfo(app.DB))
+	l.Fatal(app.e.Start(":" + os.Getenv("PORT")))
+
+	// myRouter.HandleFunc("/downloads", handlerWithDB(downloads.CreateDownloads, app.DB)).Methods("POST")
+	// myRouter.HandleFunc("/downloads", handlerWithDB(downloads.GetDownloads, app.DB)).Methods("GET")
+	// myRouter.HandleFunc("/downloads", handlerWithDB(downloads.DeleteDownloads, app.DB)).Methods("DELETE")
+	// myRouter.HandleFunc("/uploads", handlerWithDB(uploads.CreateUploads, app.DB)).Methods("POST")
+	// myRouter.HandleFunc("/uploads", handlerWithDB(uploads.GetUploads, app.DB)).Methods("GET")
+	// myRouter.HandleFunc("/uploads", handlerWithDB(uploads.DeleteUploads, app.DB)).Methods("DELETE")
+	// myRouter.HandleFunc("/uploadUserFace", handlerWithDB(userauth.UploadUserFace, app.DB)).Methods("POST")
+	// myRouter.HandleFunc("/signup", handlerWithDB(userauth.Signup, app.DB)).Methods("POST")
+	// myRouter.HandleFunc("/signin", handlerWithDB(userauth.Signin, app.DB)).Methods("POST")
+	// myRouter.HandleFunc("/user", handlerWithDB(userauth.GetUserInfo, app.DB)).Methods("GET")
+	// l.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), myRouter))
 }
 
 func handlerWithDB(fn func(w http.ResponseWriter, r *http.Request, DB *gorm.DB), DB *gorm.DB) http.HandlerFunc {

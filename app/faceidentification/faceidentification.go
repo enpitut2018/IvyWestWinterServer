@@ -78,26 +78,29 @@ func FaceIdentification(db *gorm.DB, w http.ResponseWriter, url string) ([]strin
 	var allusers models.Users
 	allusers.GetAllUsers(db, w)
 
-	if faceDetectResList, ok := FaceDetect(url, w); ok {
-		l.Debugf("faceDetectResList: %+v\n\n", faceDetectResList)
-		downloadUserIDs := make([]string, 0)
-		for _, faceDetectRes := range faceDetectResList {
-			for _, user := range allusers.Users {
-				if faceVerifyRes, ok := FaceVerify(faceDetectRes.FaceID, user.AzurePersonID, w); ok {
-					l.Debugf("faceVerifyRes: %+v\n\n", faceVerifyRes)
-					if faceVerifyRes.IsIdentical == true {
-						download := models.Download{UserID: user.UserID, URL: url}
-						if ok := download.CreateRecord(db, w); ok {
-							downloadUserIDs = append(downloadUserIDs, download.UserID)
-						} else {
-							return nil, false
-						}
-					}
-				}
-			}
-		}
-		return downloadUserIDs, true
-	} else {
+	faceDetectResList, ok := FaceDetect(url, w)
+	if !ok {
 		return nil, false
 	}
+
+	l.Debugf("faceDetectResList: %+v\n\n", faceDetectResList)
+	downloadUserIDs := make([]string, 0)
+	for _, faceDetectRes := range faceDetectResList {
+		for _, user := range allusers.Users {
+			faceVerifyRes, ok := FaceVerify(faceDetectRes.FaceID, user.AzurePersonID, w)
+			if !ok {
+				return nil, false
+			}
+			l.Debugf("faceVerifyRes: %+v\n\n", faceVerifyRes)
+
+			if faceVerifyRes.IsIdentical == true {
+				download := models.Download{UserID: user.UserID, URL: url}
+				if ok := download.CreateRecord(db, w); !ok {
+					return nil, false
+				}
+				downloadUserIDs = append(downloadUserIDs, download.UserID)
+			}
+		}
+	}
+	return downloadUserIDs, true
 }

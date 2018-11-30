@@ -9,6 +9,7 @@ import (
 	"github.com/enpitut2018/IvyWestWinterServer/app/models"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"github.com/labstack/echo"
 	l "github.com/sirupsen/logrus"
 )
 
@@ -17,28 +18,31 @@ type SignupRequest struct {
 	Password string `json:"password"`
 }
 
-func Signup(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
-	decoder := json.NewDecoder(r.Body)
-	var requser SignupRequest
-	if err := decoder.Decode(&requser); err != nil {
-		httputils.RespondError(w, http.StatusBadRequest, err.Error())
-		l.Errorf(err.Error())
-	}
+func Signup(db *gorm.DB) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		decoder := json.NewDecoder(c.Request().Body)
+		var requser SignupRequest
+		if err := decoder.Decode(&requser); err != nil {
+			httputils.RespondError(w, http.StatusBadRequest, err.Error())
+			l.Errorf(err.Error())
+		}
 
-	var user models.User
-	user.SelectByUserID(db, requser.UserID)
-	if user.UserID == requser.UserID {
-		httputils.RespondError(w, http.StatusBadRequest, fmt.Sprintf("UserID %s is already exists.", requser.UserID))
-		l.Errorf(fmt.Sprintf("UserID %s is already exists.", requser.UserID))
-	} else {
-		user.UserID = requser.UserID
-		user.Password = requser.Password
-		user.AzurePersonID = "0b4bbd63-ff70-423b-9aff-5263c745ff98" // 福山雅治の顔
-		if ok := user.CreateUserRecord(db, w); ok {
-			httputils.RespondJson(w, http.StatusOK, map[string]string{"message": "Success to create new user."})
-			l.Infof("Success")
+		var user models.User
+		user.SelectByUserID(db, requser.UserID)
+		if user.UserID == requser.UserID {
+			httputils.RespondError(w, http.StatusBadRequest, fmt.Sprintf("UserID %s is already exists.", requser.UserID))
+			l.Errorf(fmt.Sprintf("UserID %s is already exists.", requser.UserID))
+		} else {
+			user.UserID = requser.UserID
+			user.Password = requser.Password
+			user.AzurePersonID = "0b4bbd63-ff70-423b-9aff-5263c745ff98" // 福山雅治の顔
+			if ok := user.CreateUserRecord(db, w); ok {
+				httputils.RespondJson(w, http.StatusOK, map[string]string{"message": "Success to create new user."})
+				l.Infof("Success")
+			}
 		}
 	}
+
 }
 
 func Signin(w http.ResponseWriter, r *http.Request, db *gorm.DB) {

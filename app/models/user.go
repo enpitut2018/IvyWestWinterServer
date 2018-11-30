@@ -51,7 +51,6 @@ func (user *User) CreateUserRecord(db *gorm.DB, w http.ResponseWriter) bool {
 	user.Token = getToken(user.UserID)
 	if err := db.Create(&user).Error; err != nil {
 		httputils.RespondError(w, http.StatusInternalServerError, err.Error())
-		l.Errorf(err.Error())
 		return false
 	} else {
 		return true
