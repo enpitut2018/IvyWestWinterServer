@@ -1,12 +1,8 @@
 package models
 
 import (
-	"net/http"
-
-	"github.com/enpitut2018/IvyWestWinterServer/app/httputils"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	l "github.com/sirupsen/logrus"
 )
 
 type Download struct {
@@ -19,18 +15,16 @@ type Downloads struct {
 	Downloads []Download
 }
 
-func (download *Download) CreateRecord(db *gorm.DB, w http.ResponseWriter) bool {
+func (download *Download) CreateRecord(db *gorm.DB) error {
 	if err := db.Create(&download).Error; err != nil {
-		httputils.RespondError(w, http.StatusInternalServerError, "Can't make record.")
-		l.Errorf("Can't make record.")
+		return err
 	}
-	return true
+	return nil
 }
 
-func (downloads *Downloads) GetDownloadsByUserID(db *gorm.DB, w http.ResponseWriter, userID string) bool {
+func (downloads *Downloads) GetDownloadsByUserID(db *gorm.DB, userID string) error {
 	if err := db.Find(&downloads.Downloads, "user_id = ?", userID).Error; err != nil {
-		httputils.RespondError(w, http.StatusBadRequest, err.Error())
-		l.Errorf(err.Error())
+		return err
 	}
-	return true
+	return nil
 }

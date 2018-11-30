@@ -16,12 +16,18 @@ func GetUploads(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	var uploads models.Uploads
 	var user models.User
 	token := r.Header.Get("Authorization")
-	if ok := user.GetUserFromToken(db, w, token); ok {
-		if ok := uploads.GetPhotosByUserID(db, w, user.UserID); ok {
-			httputils.RespondJson(w, http.StatusOK, uploads.Uploads)
-			l.Infof("Success")
-		}
+	if err := user.GetUserFromToken(db, token); err != nil {
+		httputils.RespondError(w, http.StatusBadRequest, "Not valid token.")
+		l.Errorf("Not valid token.")
+		return
 	}
+	if err := uploads.GetPhotosByUserID(db, user.UserID); err != nil {
+		httputils.RespondError(w, http.StatusBadRequest, "Can't get phots by users.")
+		l.Errorf("Can't get phots by users.")
+		return
+	}
+	httputils.RespondJson(w, http.StatusOK, uploads.Uploads)
+	l.Infof("Success")
 }
 
 type SourceRequest struct {
@@ -43,22 +49,34 @@ func CreateUploads(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	if err := decoder.Decode(&source); err != nil {
 		httputils.RespondError(w, http.StatusBadRequest, err.Error())
 		l.Errorf(err.Error())
-	} else {
-		url := awsutils.UploadPhoto(w, source.Source, s3FolderPath)
-
-		var user models.User
-		if ok := user.GetUserFromToken(db, w, token); ok {
-			upload := models.Upload{UserID: user.UserID, URL: url}
-			if ok := upload.CreateRecord(db, w); ok {
-				// 顔認識を使用してDownloadテーブルにレコードを追加する。
-				if downloadUserIDs, ok := faceidentification.FaceIdentification(db, w, upload.URL); ok {
-					res := UploadResponse{UserID: upload.UserID, URL: upload.URL, DownloadUserIDs: downloadUserIDs}
-					httputils.RespondJson(w, http.StatusOK, res)
-					l.Infof("Success")
-				}
-			}
-		}
+		return
 	}
+	url := awsutils.UploadPhoto(w, source.Source, s3FolderPath)
+
+	var user models.User
+	if err := user.GetUserFromToken(db, token); err != nil {
+		httputils.RespondError(w, http.StatusBadRequest, "Not valid token.")
+		l.Errorf("Not valid token.")
+		return
+	}
+
+	upload := models.Upload{UserID: user.UserID, URL: url}
+	if err := upload.CreateRecord(db); err != nil {
+		httputils.RespondError(w, http.StatusInternalServerError, err.Error())
+		l.Errorf(err.Error())
+		return
+	}
+	// 顔認識を使用してDownloadテーブルにレコードを追加する。
+	downloadUserIDs, err := faceidentification.FaceIdentification(db, w, upload.URL)
+	if err != nil {
+		httputils.RespondError(w, http.StatusInternalServerError, err.Error())
+		l.Errorf(err.Error())
+		return
+	}
+	res := UploadResponse{UserID: upload.UserID, URL: upload.URL, DownloadUserIDs: downloadUserIDs}
+	httputils.RespondJson(w, http.StatusOK, res)
+	l.Infof("Success")
+	return
 }
 
 func DeleteUploads(w http.ResponseWriter, r *http.Request, db *gorm.DB) {

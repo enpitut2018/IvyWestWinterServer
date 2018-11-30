@@ -24,14 +24,22 @@ func UploadUserFace(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	if err := decoder.Decode(&source); err != nil {
 		httputils.RespondError(w, http.StatusBadRequest, err.Error())
 		l.Errorf(err.Error())
-	} else {
-		var user models.User
-		urlStr := awsutils.UploadPhoto(w, source.Source, s3FolderPath)
-		if ok := user.GetUserFromToken(db, w, token); ok {
-			if ok := user.UpdateAbaterURL(db, w, urlStr); ok {
-				httputils.RespondJson(w, http.StatusOK, user)
-				l.Info("Success")
-			}
-		}
+		return
 	}
+
+	var user models.User
+	urlStr := awsutils.UploadPhoto(w, source.Source, s3FolderPath)
+	if err := user.GetUserFromToken(db, token); err != nil {
+		httputils.RespondError(w, http.StatusBadRequest, "No valid token.")
+		l.Errorf("No valid token.")
+		return
+	}
+
+	if err := user.UpdateAbaterURL(db, urlStr); err != nil {
+		httputils.RespondError(w, http.StatusBadRequest, "Cannot update AvaterURL.")
+		l.Errorf("Cannot update AvaterURL.")
+		return
+	}
+	httputils.RespondJson(w, http.StatusOK, user)
+	l.Info("Success")
 }

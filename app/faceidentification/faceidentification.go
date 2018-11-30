@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/enpitut2018/IvyWestWinterServer/app/httputils"
 	"github.com/enpitut2018/IvyWestWinterServer/app/models"
 	"github.com/jinzhu/gorm"
 	l "github.com/sirupsen/logrus"
@@ -37,70 +36,65 @@ type FaceVerifyResponse struct {
 	Confidence  float32
 }
 
-func PostAzureApi(url string, inJSON interface{}, outJSON interface{}, w http.ResponseWriter) bool {
+func PostAzureApi(url string, inJSON interface{}, outJSON interface{}, w http.ResponseWriter) error {
 	body := new(bytes.Buffer)
 	json.NewEncoder(body).Encode(inJSON)
 	req, _ := http.NewRequest("POST", url, body)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Ocp-Apim-Subscription-Key", os.Getenv("AZURE_FACE_KEY"))
 	client := &http.Client{}
-	if res, _ := client.Do(req); res.StatusCode != 200 {
-		httputils.RespondError(w, http.StatusBadRequest, res.Status)
-		l.Errorf(res.Status)
-		return false
+	if res, err := client.Do(req); res.StatusCode != 200 {
+		return err
 	} else {
 		decoder := json.NewDecoder(res.Body)
 		if err := decoder.Decode(&outJSON); err != nil {
-			httputils.RespondError(w, http.StatusBadRequest, err.Error())
-			l.Errorf(err.Error())
-			return false
-		} else {
-			return true
+			return err
 		}
 	}
+	return nil
 }
 
-func FaceDetect(url string, w http.ResponseWriter) (faceDetectResList []FaceDetectResponse, ok bool) {
+func FaceDetect(url string, w http.ResponseWriter) (faceDetectResList []FaceDetectResponse, err error) {
 	faceDetectURL := "https://japaneast.api.cognitive.microsoft.com/face/v1.0/detect"
 	inJSON := FaceDetectRequest{URL: url}
-	PostAzureApi(faceDetectURL, inJSON, &faceDetectResList, w)
-	return faceDetectResList, true
+	err = PostAzureApi(faceDetectURL, inJSON, &faceDetectResList, w)
+	return faceDetectResList, err
 }
 
-func FaceVerify(faceID string, personID string, w http.ResponseWriter) (faceVerifyRes FaceVerifyResponse, ok bool) {
+func FaceVerify(faceID string, personID string, w http.ResponseWriter) (faceVerifyRes FaceVerifyResponse, err error) {
 	faceVerifyURL := "https://japaneast.api.cognitive.microsoft.com/face/v1.0/verify"
 	inJSON := FaceVerifyRequest{FaceID: faceID, PersonID: personID, PersonGroupID: personGroupID}
-	PostAzureApi(faceVerifyURL, inJSON, &faceVerifyRes, w)
-	return faceVerifyRes, true
+	err = PostAzureApi(faceVerifyURL, inJSON, &faceVerifyRes, w)
+	return faceVerifyRes, err
 }
 
-func FaceIdentification(db *gorm.DB, w http.ResponseWriter, url string) ([]string, bool) {
+func FaceIdentification(db *gorm.DB, w http.ResponseWriter, url string) ([]string, error) {
 	var allusers models.Users
-	allusers.GetAllUsers(db, w)
+	allusers.GetAllUsers(db)
 
-	faceDetectResList, ok := FaceDetect(url, w)
-	if !ok {
-		return nil, false
+	faceDetectResList, err := FaceDetect(url, w)
+	if err != nil {
+		return nil, nil
 	}
 
 	l.Debugf("faceDetectResList: %+v\n\n", faceDetectResList)
 	downloadUserIDs := make([]string, 0)
 	for _, faceDetectRes := range faceDetectResList {
 		for _, user := range allusers.Users {
-			faceVerifyRes, ok := FaceVerify(faceDetectRes.FaceID, user.AzurePersonID, w)
-			if !ok {
-				return nil, false
+			faceVerifyRes, err := FaceVerify(faceDetectRes.FaceID, user.AzurePersonID, w)
+			if err != nil {
+				return nil, err
 			}
 			l.Debugf("faceVerifyRes: %+v\n\n", faceVerifyRes)
 
 			if faceVerifyRes.IsIdentical == true {
 				download := models.Download{UserID: user.UserID, URL: url}
-				if ok := download.CreateRecord(db, w); !ok {
-					return nil, false
+				if err := download.CreateRecord(db); err != nil {
+					return nil, err
 				}
 				downloadUserIDs = append(downloadUserIDs, download.UserID)
 			}
 		}
 	}
-	return downloadUserIDs, true
+	return downloadUserIDs, nil
 }

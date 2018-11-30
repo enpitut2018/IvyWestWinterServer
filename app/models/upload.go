@@ -1,12 +1,8 @@
 package models
 
 import (
-	"net/http"
-
-	"github.com/enpitut2018/IvyWestWinterServer/app/httputils"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	l "github.com/sirupsen/logrus"
 )
 
 type Upload struct {
@@ -19,18 +15,16 @@ type Uploads struct {
 	Uploads []Upload
 }
 
-func (upload *Upload) CreateRecord(db *gorm.DB, w http.ResponseWriter) bool {
+func (upload *Upload) CreateRecord(db *gorm.DB) error {
 	if err := db.Create(&upload).Error; err != nil {
-		httputils.RespondError(w, http.StatusInternalServerError, "Can't make record")
-		l.Errorf("Can't make record")
+		return err
 	}
-	return true
+	return nil
 }
 
-func (uploads *Uploads) GetPhotosByUserID(db *gorm.DB, w http.ResponseWriter, userid string) bool {
+func (uploads *Uploads) GetPhotosByUserID(db *gorm.DB, userid string) error {
 	if err := db.Find(&uploads.Uploads, "userid = ?", userid).Error; err != nil {
-		httputils.RespondError(w, http.StatusBadRequest, err.Error())
-		l.Errorf(err.Error())
+		return err
 	}
-	return true
+	return nil
 }
