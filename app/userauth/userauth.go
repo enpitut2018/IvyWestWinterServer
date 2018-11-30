@@ -38,7 +38,12 @@ func Signup(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	user.UserID = requser.UserID
 	user.Password = requser.Password
 	// user.AzurePersonID = "0b4bbd63-ff70-423b-9aff-5263c745ff98" // 福山雅治の顔
-	azurePersonID := faceidentification.CreatePerson(user.UserID, "My name is "+user.UserID, w)
+	azurePersonID, err := faceidentification.CreatePerson(user.UserID, "My name is "+user.UserID, w)
+	if err != nil {
+		httputils.RespondError(w, http.StatusBadRequest, err.Error())
+		l.Errorf(err.Error())
+		return
+	}
 	user.AzurePersonID = azurePersonID
 	if err := user.CreateUserRecord(db); err != nil {
 		httputils.RespondError(w, http.StatusBadRequest, err.Error())
