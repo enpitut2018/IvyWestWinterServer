@@ -2,11 +2,13 @@ package userauth
 
 import (
 	"encoding/json"
+	"net/http"
+
+	"github.com/enpitut2018/IvyWestWinterServer/app/faceidentification"
 	"github.com/enpitut2018/IvyWestWinterServer/app/httputils"
 	"github.com/enpitut2018/IvyWestWinterServer/app/models"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"net/http"
 )
 
 type SignupRequest struct {
@@ -28,7 +30,9 @@ func Signup(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	} else {
 		user.UserID = requser.UserID
 		user.Password = requser.Password
-		user.AzurePersonID = "0b4bbd63-ff70-423b-9aff-5263c745ff98" // 福山雅治の顔
+		createPersonRe := faceidentification.CreatePerson(user.UserID, "My name is "+user.UserID, w)
+		user.AzurePersonID = createPersonRe.PersonID
+		// user.AzurePersonID = "0b4bbd63-ff70-423b-9aff-5263c745ff98" // 福山雅治の顔
 		if ok := user.CreateUserRecord(db, w); ok {
 			httputils.RespondJson(w, http.StatusOK, map[string]string{"message": "Success to create new user."})
 		}

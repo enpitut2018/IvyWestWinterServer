@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+
+	"net/http"
+	"os"
+
 	"github.com/enpitut2018/IvyWestWinterServer/app/httputils"
 	"github.com/enpitut2018/IvyWestWinterServer/app/models"
 	"github.com/jinzhu/gorm"
-	"net/http"
-	"os"
 )
 
 var (
@@ -34,6 +36,15 @@ type FaceVerifyRequest struct {
 type FaceVerifyResponse struct {
 	IsIdentical bool
 	Confidence  float32
+}
+
+type CreatePersonRequest struct {
+	Name     string `json:name`
+	UserData string `json:userData`
+}
+
+type CreatePersonResponse struct {
+	PersonID string
 }
 
 func PostAzureApi(url string, inJSON interface{}, outJSON interface{}, w http.ResponseWriter) {
@@ -67,6 +78,13 @@ func FaceVerify(faceID string, personID string, w http.ResponseWriter) (faceVeri
 	inJSON := FaceVerifyRequest{FaceID: faceID, PersonID: personID, PersonGroupID: personGroupID}
 	PostAzureApi(faceVerifyURL, inJSON, &faceVerifyRes, w)
 	return faceVerifyRes
+}
+
+func CreatePerson(name string, userData string, w http.ResponseWriter) (createPersonRes CreatePersonResponse) {
+	createPersonURL := "https://japaneast.api.cognitive.microsoft.com/face/v1.0/persongroups/" + personGroupID + "/persons"
+	inJSON := CreatePersonRequest{Name: name, UserData: userData}
+	PostAzureApi(createPersonURL, inJSON, &createPersonRes, w)
+	return createPersonRes
 }
 
 func FaceIdentification(db *gorm.DB, w http.ResponseWriter, url string) []string {
