@@ -7,9 +7,11 @@ services:
       POSTGRES_USER: postgres
     ports:
       - 5432:5432
+    volumes:
+      - ./tmp/db:/var/lib/postgresql/data
   web:
     build: ./app
-    command: ["go", "run", "app/main.go"]
+    command: ["/wait-for-postgres.sh", "db", "go", "run", "app/main.go"]
     volumes:
       - .:/go/src/github.com/enpitut2018/IvyWestWinterServer
     ports:
