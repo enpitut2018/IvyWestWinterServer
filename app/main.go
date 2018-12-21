@@ -57,6 +57,7 @@ func (app *App) Run() {
 	app.Router.HandleFunc("/signup", handlerWithDB(userauth.Signup, app.DB)).Methods("POST")
 	app.Router.HandleFunc("/signin", handlerWithDB(userauth.Signin, app.DB)).Methods("POST")
 	app.Router.HandleFunc("/user", handlerWithDB(userauth.GetUserInfo, app.DB)).Methods("GET")
+	app.Router.HandleFunc("/users", handlerWithDB(userauth.GetUsersInfo, app.DB)).Methods("GET")
 	app.Router.Use(loggingMiddleware)
 	l.Info(http.ListenAndServe(":"+os.Getenv("PORT"), app.Router))
 }

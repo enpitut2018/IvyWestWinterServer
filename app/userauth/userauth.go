@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/enpitut2018/IvyWestWinterServer/app/faceidentification"
 	"github.com/enpitut2018/IvyWestWinterServer/app/httputils"
@@ -91,4 +92,40 @@ func GetUserInfo(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	}
 	httputils.RespondJson(w, http.StatusOK, user)
 	l.Infof("Success.")
+}
+
+type UserNoToken struct{
+	UserID        string `gorm:"not null;unique"  json:"userid"`
+	AvatarURL     string `json:"avatarurl"`
+}
+
+func GetUsersInfo(w http.ResponseWriter, r *http.Request, db *gorm.DB){
+	var users []UserNoToken
+	queryString := r.URL.Query()
+
+	for _, vs := range queryString {
+				ids := strings.Split(vs[0],",")
+
+				if queryString == nil{
+					l.Errorf("No Insert Ids.")
+					return
+				}
+
+				for _,id := range ids{
+					var user models.User
+
+					if err := user.SelectByUserID(db, id); err != nil{
+						httputils.RespondError(w, http.StatusBadRequest, "Not valid id.")
+						l.Errorf("Not valid id.")
+						continue
+					}
+
+					var noToken UserNoToken
+					noToken.UserID = user.UserID
+					noToken.AvatarURL = user.AvatarURL
+					users=append(users,noToken)
+					l.Infof("Success.")
+				}
+		httputils.RespondJson(w, http.StatusOK, users)
+  }
 }
