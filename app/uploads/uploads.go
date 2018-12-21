@@ -12,6 +12,66 @@ import (
 	l "github.com/sirupsen/logrus"
 )
 
+type Downloader struct {
+	ID        string `json:"id"`
+	AvatarURL string `json:"avatar_url"`
+}
+
+type PhotoInfo struct {
+	ID       uint   `json:"id"`
+	URL      string `json:"url"`
+	Uploader struct {
+		ID        string `json:"id"`
+		AvatarURL string `json:"avatar_url"`
+	} `json:"uploader"`
+	Downloaders []Downloader `json:"downloaders"`
+}
+
+func GetPhotoInfo(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
+	// 自分が送信した写真の情報を返す。
+	token := r.Header.Get("Authorization")
+	var uploader models.User
+	var photoInfos []PhotoInfo
+	if err := uploader.GetUserFromToken(db, token); err != nil {
+		httputils.RespondError(w, http.StatusBadRequest, "Not valid token.")
+		l.Errorf("Not valid token.")
+		return
+	}
+
+	var uploader_photos models.Uploads
+	uploader_photos.GetPhotosByUserID(db, uploader.UserID)
+
+	for _, photo := range uploader_photos.Uploads {
+		var photoInfo PhotoInfo
+		photoInfo.ID = photo.ID
+		photoInfo.URL = photo.URL
+		photoInfo.Uploader.ID = uploader.UserID
+		photoInfo.Uploader.AvatarURL = uploader.AvatarURL
+
+		var downloads models.Downloads
+		if err := downloads.GetDownloadsByPhotoID(db, photo.ID); err != nil {
+			httputils.RespondError(w, http.StatusBadRequest, "Failed Get PhotoInfo.")
+			l.Errorf("Failed Get PhotoInfo. id=%+v", photo.ID)
+			return
+		}
+
+		for _, photo := range downloads.Downloads {
+			var downloader models.User
+			var d Downloader
+			if err := downloader.SelectByUserID(db, photo.UserID); err != nil {
+				httputils.RespondError(w, http.StatusBadRequest, "Not valid token.")
+				l.Errorf("Can't Get Downloader Info. id=%+v", photo.UserID)
+				return
+			}
+			d.ID = downloader.UserID
+			d.AvatarURL = downloader.AvatarURL
+			photoInfo.Downloaders = append(photoInfo.Downloaders, d)
+		}
+		photoInfos = append(photoInfos, photoInfo)
+	}
+	httputils.RespondJson(w, http.StatusOK, photoInfos)
+}
+
 func GetUploads(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	var uploads models.Uploads
 	var user models.User

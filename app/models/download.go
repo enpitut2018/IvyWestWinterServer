@@ -32,3 +32,10 @@ func (downloads *Downloads) GetDownloadsByUserID(db *gorm.DB, userID string) err
 	}
 	return nil
 }
+
+func (downloads *Downloads) GetDownloadsByPhotoID(db *gorm.DB, photoID uint) error {
+	if err := db.Find(&downloads, "id = ?", photoID).Error; err != nil {
+		return err
+	}
+	return nil
+}
