@@ -45,11 +45,11 @@ type CreatePersonResponse struct {
 	PersonID string
 }
 
-type AddUserFaceRequest struct{
+type AddUserFaceRequest struct {
 	URL string `json:"url"`
 }
 
-type AddUserFaceResponse struct{
+type AddUserFaceResponse struct {
 	PersistedFaceId string `json:"persistedFaceId"`
 }
 
@@ -71,10 +71,10 @@ func PostAzureApi(url string, inJSON interface{}, outJSON interface{}, w http.Re
 	return nil
 }
 
-func AddUserFace(url string, personID string, w http.ResponseWriter)(addUserFaceRes AddUserFaceResponse){
-	addUserFaceURL := "https://japaneast.api.cognitive.microsoft.com/face/v1.0/persongroups/ivy-west-winter-test/persons/"+ personID +"/persistedFaces"
+func AddUserFace(url string, personID string, w http.ResponseWriter) (addUserFaceRes AddUserFaceResponse) {
+	addUserFaceURL := "https://japaneast.api.cognitive.microsoft.com/face/v1.0/persongroups/ivy-west-winter-test/persons/" + personID + "/persistedFaces"
 	inJSON := AddUserFaceRequest{URL: url}
-	PostAzureApi(addUserFaceURL, inJSON, &addUserFaceRes,w)
+	PostAzureApi(addUserFaceURL, inJSON, &addUserFaceRes, w)
 	return addUserFaceRes
 }
 
@@ -100,7 +100,7 @@ func CreatePerson(name string, userData string, w http.ResponseWriter) (string, 
 	return createPersonRes.PersonID, err
 }
 
-func FaceIdentification(db *gorm.DB, w http.ResponseWriter, url string) ([]string, error) {
+func FaceIdentification(db *gorm.DB, w http.ResponseWriter, url string, photoID uint) ([]string, error) {
 	var allusers models.Users
 	allusers.GetAllUsers(db)
 
@@ -120,7 +120,7 @@ func FaceIdentification(db *gorm.DB, w http.ResponseWriter, url string) ([]strin
 			l.Debugf("faceVerifyRes: %+v\n\n", faceVerifyRes)
 
 			if faceVerifyRes.IsIdentical == true {
-				download := models.Download{UserID: user.UserID, URL: url}
+				download := models.Download{UserID: user.UserID, URL: url, PhotoID: photoID}
 				if err := download.CreateRecord(db); err != nil {
 					return nil, err
 				}

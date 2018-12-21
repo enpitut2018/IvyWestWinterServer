@@ -27,7 +27,7 @@ type PhotoInfo struct {
 	Downloaders []Downloader `json:"downloaders"`
 }
 
-func GetPhotoInfo(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
+func GetUploadPhotoInfo(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	// 自分が送信した写真の情報を返す。
 	token := r.Header.Get("Authorization")
 	var uploader models.User
@@ -54,7 +54,7 @@ func GetPhotoInfo(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 			l.Errorf("Failed Get PhotoInfo. id=%+v", photo.ID)
 			return
 		}
-
+		l.Infof("%+v", downloads)
 		for _, photo := range downloads.Downloads {
 			var downloader models.User
 			var d Downloader
@@ -127,7 +127,7 @@ func CreateUploads(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 		return
 	}
 	// 顔認識を使用してDownloadテーブルにレコードを追加する。
-	downloadUserIDs, err := faceidentification.FaceIdentification(db, w, upload.URL)
+	downloadUserIDs, err := faceidentification.FaceIdentification(db, w, upload.URL, upload.ID)
 	if err != nil {
 		httputils.RespondError(w, http.StatusInternalServerError, err.Error())
 		l.Errorf(err.Error())
