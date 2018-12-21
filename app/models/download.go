@@ -11,6 +11,7 @@ type Download struct {
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt time.Time  `json:"-"`
 	DeletedAt *time.Time `sql:"index" json:"-"`
+	PhotoID   uint       `json:"photoid"`
 	UserID    string     `json:"userid"`
 	URL       string     `json:"url"`
 }
@@ -26,6 +27,11 @@ func (download *Download) CreateRecord(db *gorm.DB) error {
 	return nil
 }
 
+func (download *Download) GetDownloadByPhotoID(db *gorm.DB, photoID uint) error {
+	db.Find(&download, "photo_id = ?", photoID)
+	return nil
+}
+
 func (downloads *Downloads) GetDownloadsByUserID(db *gorm.DB, userID string) error {
 	if err := db.Find(&downloads.Downloads, "user_id = ?", userID).Error; err != nil {
 		return err
@@ -34,8 +40,6 @@ func (downloads *Downloads) GetDownloadsByUserID(db *gorm.DB, userID string) err
 }
 
 func (downloads *Downloads) GetDownloadsByPhotoID(db *gorm.DB, photoID uint) error {
-	if err := db.Find(&downloads, "id = ?", photoID).Error; err != nil {
-		return err
-	}
+	db.Find(&downloads.Downloads, "photo_id = ?", photoID)
 	return nil
 }

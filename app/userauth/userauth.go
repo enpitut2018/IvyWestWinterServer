@@ -94,38 +94,36 @@ func GetUserInfo(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	l.Infof("Success.")
 }
 
-type UserNoToken struct{
-	UserID        string `gorm:"not null;unique"  json:"userid"`
-	AvatarURL     string `json:"avatarurl"`
+type ResUser struct {
+	UserID    string `gorm:"not null;unique"  json:"userid"`
+	AvatarURL string `json:"avatarurl"`
 }
 
-func GetUsersInfo(w http.ResponseWriter, r *http.Request, db *gorm.DB){
-	var users []UserNoToken
-	queryString := r.URL.Query()
+func GetUsersInfo(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
+	var allUsers models.Users
+	allUsers.GetAllUsers(db)
+	queryString := r.URL.Query().Get("ids")
 
-	for _, vs := range queryString {
-				ids := strings.Split(vs[0],",")
-
-				if queryString == nil{
-					l.Errorf("No Insert Ids.")
-					return
+	var resUsers []ResUser
+	if queryString == "" {
+		for _, user := range allUsers.Users {
+			var resUser ResUser
+			resUser.UserID = user.UserID
+			resUser.AvatarURL = user.AvatarURL
+			resUsers = append(resUsers, resUser)
+		}
+	} else {
+		for _, user := range allUsers.Users {
+			for _, queryID := range strings.Split(queryString, ",") {
+				if user.UserID == queryID {
+					var resUser ResUser
+					resUser.UserID = user.UserID
+					resUser.AvatarURL = user.AvatarURL
+					resUsers = append(resUsers, resUser)
 				}
-
-				for _,id := range ids{
-					var user models.User
-
-					if err := user.SelectByUserID(db, id); err != nil{
-						httputils.RespondError(w, http.StatusBadRequest, "Not valid id.")
-						l.Errorf("Not valid id.")
-						continue
-					}
-
-					var noToken UserNoToken
-					noToken.UserID = user.UserID
-					noToken.AvatarURL = user.AvatarURL
-					users=append(users,noToken)
-					l.Infof("Success.")
-				}
-		httputils.RespondJson(w, http.StatusOK, users)
-  }
+			}
+		}
+	}
+	httputils.RespondJson(w, http.StatusOK, resUsers)
+	return
 }
