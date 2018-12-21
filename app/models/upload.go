@@ -32,3 +32,10 @@ func (uploads *Uploads) GetPhotosByUserID(db *gorm.DB, userid string) error {
 	}
 	return nil
 }
+
+func (upload *Upload) GetPhotoByPhotoID(db *gorm.DB, photoid string) error {
+	if err := db.Raw("SELECT * FROM uploads WHERE id = ?", photoid).Scan(&upload).Error; err != nil {
+		return err
+	}
+	return nil
+}

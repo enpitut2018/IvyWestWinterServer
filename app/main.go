@@ -53,6 +53,7 @@ func (app *App) Run() {
 	app.Router.HandleFunc("/uploads", handlerWithDB(uploads.CreateUploads, app.DB)).Methods("POST")
 	app.Router.HandleFunc("/uploads", handlerWithDB(uploads.GetUploads, app.DB)).Methods("GET")
 	app.Router.HandleFunc("/uploads", handlerWithDB(uploads.DeleteUploads, app.DB)).Methods("DELETE")
+	app.Router.HandleFunc("/photos", handlerWithDB(uploads.GetPhotoInfo, app.DB)).Methods("GET")
 	app.Router.HandleFunc("/uploadUserFace", handlerWithDB(userauth.UploadUserFace, app.DB)).Methods("POST")
 	app.Router.HandleFunc("/signup", handlerWithDB(userauth.Signup, app.DB)).Methods("POST")
 	app.Router.HandleFunc("/signin", handlerWithDB(userauth.Signin, app.DB)).Methods("POST")
