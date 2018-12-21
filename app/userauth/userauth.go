@@ -51,7 +51,7 @@ func Signup(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 		return
 	}
 
-	httputils.RespondJson(w, http.StatusOK, map[string]string{"message": "Success to create new user."})
+	httputils.RespondJson(w, http.StatusOK, user)
 	l.Infof("Success")
 }
 
