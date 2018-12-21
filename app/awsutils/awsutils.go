@@ -20,6 +20,7 @@ import (
 var (
 	ACCESS_KEY = os.Getenv("AWS_ACCESS_KEY")
 	SECRET_KEY = os.Getenv("AWS_SECRET_KEY")
+	BUCKET     = "ivy-west-winter2" // s3のバケット名
 )
 
 func UploadPhoto(w http.ResponseWriter, base64Str string, s3FolderPath string) string {
@@ -34,7 +35,7 @@ func UploadPhoto(w http.ResponseWriter, base64Str string, s3FolderPath string) s
 		httputils.RespondError(w, http.StatusInternalServerError, "Can't upload the photo.")
 		l.Errorf("Can't upload the photo.")
 	}
-	return "https://s3-ap-northeast-1.amazonaws.com" + filepath.Join("/ivy-west-winter", s3FolderPath, imageFileName)
+	return "https://s3-ap-northeast-1.amazonaws.com" + filepath.Join("/"+BUCKET, s3FolderPath, imageFileName)
 }
 
 func getS3Client() *s3.S3 {
@@ -49,8 +50,8 @@ func getS3Client() *s3.S3 {
 func UploadS3(body []byte, keyname string) bool {
 	client := getS3Client()
 	input := &s3.PutObjectInput{
-		Bucket: aws.String("ivy-west-winter"), // Required
-		Key:    aws.String(keyname),           // Required
+		Bucket: aws.String(BUCKET),  // Required
+		Key:    aws.String(keyname), // Required
 		ACL:    aws.String("public-read"),
 		Body:   bytes.NewReader(body),
 	}
