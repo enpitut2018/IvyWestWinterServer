@@ -64,12 +64,14 @@ func GetDownloadPhotoInfo(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	for _, photo := range user_photos.Downloads {
 
 		var uploader models.User
-		uploader.SelectByUserID(db, photo.UserID)
+		var upload_photo models.Upload
+		upload_photo.GetPhotoByPhotoID(db, photo.PhotoID)
+		uploader.SelectByUserID(db, upload_photo.UserID)
 
 		// 写真に写っているuserを全て返すクエリ
 		var resUsers []ResUser
-		if err := db.Raw(`SELECT users.user_id, users.avatar_url FROM users 
-						LEFT OUTER JOIN downloads ON (downloads.user_id = users.user_id) 
+		if err := db.Raw(`SELECT users.user_id, users.avatar_url FROM users
+						LEFT OUTER JOIN downloads ON (downloads.user_id = users.user_id)
 						WHERE downloads.photo_id = ?`, photo.PhotoID).Scan(&resUsers).Error; err != nil {
 			httputils.RespondError(w, http.StatusBadRequest, "Failed Get Users in the Photo")
 			l.Errorf("Failed Get Users in the Photo, %+v", photo)
