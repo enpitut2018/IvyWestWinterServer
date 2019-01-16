@@ -177,7 +177,7 @@ curl --request GET \
 
 ```
 curl --request GET \
-  --url 'http://localhost:8080/downloadPhotoInfos?userid=west,sekine' \
+  --url 'http://localhost:8080/downloadPhotoInfos?userids=west,sekine' \
   --header 'Authorization: a735c3e8bc21cbe0f03e501a1529e0b4' \
 ```
 
